@@ -26,8 +26,8 @@
 %  Part 4. fit best line
 
 
-%  Last edit: Jen Nguyen, 2019 December 4
-%  Commit: first commit, birth size vs lambda - population mean
+%  Last edit: Jen Nguyen, 2019 December 8
+%  Commit: add time at birth as parameter 13 in data matrix
 
 %  OK let's go!
 
@@ -224,6 +224,7 @@ for e = 1:length(exptArray)
         %     preparation to trim by outliers based on cell volume
         data_size = data_fullyTrimmed(:,1:4); % columns 1-4 = vol, length, width, SA:V
         data_Vbirth = data_fullyTrimmed(:,1);
+        data_timestamps = data_fullyTrimmed(:,5);
         data_curves = data_fullyTrimmed(:,6);
         data_tau = data_fullyTrimmed(:,7);
         data_trackNum = data_fullyTrimmed(:,8);
@@ -242,6 +243,7 @@ for e = 1:length(exptArray)
             
             % ii. remove cell cycles of WAY LARGE birth size, tracking IDs
             sizes_temp = data_size(data_Vbirth <= (vol_median+vol_std_temp*3),:); % cut largest vals, over 3 std out
+            time_temp = data_timestamps(data_Vbirth <= (vol_median+vol_std_temp*3),:);
             IDs_temp = data_curves(data_Vbirth <= (vol_median+vol_std_temp*3));
             tau_temp = data_tau(data_Vbirth <= (vol_median+vol_std_temp*3));
             track_temp = data_trackNum(data_Vbirth <= (vol_median+vol_std_temp*3));
@@ -250,10 +252,11 @@ for e = 1:length(exptArray)
             
             % iii. remove cell cycle of WAY SMALL birth size, tracking IDs
             sizes_final = sizes_temp(vol_temp >= (vol_median-vol_std_temp*3),:);          % cut smallest vals, over 3 std out 
+            times_final = time_temp(vol_temp >= (vol_median-vol_std_temp*3),:); 
             IDs_final = IDs_temp(vol_temp >= (vol_median-vol_std_temp*3));   
             tau_final = tau_temp(vol_temp >= (vol_median-vol_std_temp*3));
             trackNum_final = track_temp(vol_temp >= (vol_median-vol_std_temp*3));
-            clear vol_median vol_std_temp sizes_temp IDs_temp vol_temp tau_temp track_temp
+            clear vol_median vol_std_temp sizes_temp IDs_temp vol_temp tau_temp track_temp time_temp
             
             % iv. remove corresponding growth rates from datasets
             trimmedIDs = setdiff(curveIDs_unique,IDs_final);    % curve IDs in growth rate dataset, NOT in final IDs trimmed by cell cycle
@@ -325,7 +328,7 @@ for e = 1:length(exptArray)
             
             
             % 18. store condition data into one variable per experiment
-            cc_data = [IDs_final sizes_final(:,1) plus1_volume sizes_final(:,2) plus1_length sizes_final(:,3) plus1_width sizes_final(:,4) plus1_sa2v lambdas tau_final/60 trackNum_final]; % tau here is converted from sec to min
+            cc_data = [IDs_final sizes_final(:,1) plus1_volume sizes_final(:,2) plus1_length sizes_final(:,3) plus1_width sizes_final(:,4) plus1_sa2v lambdas tau_final/60 trackNum_final times_final]; % tau here is converted from sec to min
             
             ccData{condition} = cc_data;
             mu_instantaneous{condition} = mus;
