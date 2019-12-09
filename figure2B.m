@@ -3,8 +3,8 @@
 
 %  Goal: what is the path between two steady-states?
 
-%        plot birth volume vs mean growth rate from data just before
-%        and for as long as possible after a single downsshift
+%        plot birth size vs mean growth rate from data,
+%        binned by time since downshift
 
 
 %  Strategy: 
