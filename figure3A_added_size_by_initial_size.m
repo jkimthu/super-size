@@ -18,7 +18,8 @@
 
 
 %  Last edit: Jen Nguyen, 2019 Jan 16
-%  Commit: plot added size binned by birth size
+%  Commit: update to include growth rate and tau data
+
 
 %  OK let's go!
 
@@ -46,7 +47,6 @@ fluc = 1; % row number in data structure
 low = 2; 
 ave = 3; 
 high = 4;
-lamb = 1;
 
 
 sigmas = 3;
@@ -59,7 +59,7 @@ for ee = 1:length(environment_order)
         % steady environment! concatenate data based on nutrient level
         if strcmp(condition,'low') == 1
             
-            lambda_low = [];
+            meta_low = [];
             ccSizes_low = [];
             plusSizes_low = [];
 
@@ -70,12 +70,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_low = [lambda_low; expt_lambda];
+                    meta_low = [meta_low; expt_meta];
                     ccSizes_low = [ccSizes_low; expt_sizes];
                     plusSizes_low = [plusSizes_low; expt_plus]; 
                     clear expt_lambda expt_sizes expt_plus
@@ -85,12 +85,12 @@ for ee = 1:length(environment_order)
             clear expt expt_data expt_plus
             
             sizes{1} = ccSizes_low;
-            lambda{1} = lambda_low;
+            metas{1} = meta_low;
             plus{1} = plusSizes_low;
             
         elseif strcmp(condition,'ave') == 1
             
-            lambda_ave = [];
+            meta_ave = [];
             ccSizes_ave = [];
             plusSizes_ave = [];
             
@@ -101,12 +101,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_ave = [lambda_ave; expt_lambda];
+                    meta_ave = [meta_ave; expt_meta];
                     ccSizes_ave = [ccSizes_ave; expt_sizes];
                     plusSizes_ave = [plusSizes_ave; expt_plus];
                     clear expt_lambda expt_sizes
@@ -117,14 +117,14 @@ for ee = 1:length(environment_order)
  
             
             % store condition data
-            lambda{6} = lambda_ave; %range_lambda;
+            metas{6} = meta_ave; %range_lambda;
             sizes{6} = ccSizes_ave; %range_sizes;
             plus{6} = plusSizes_ave;
 
             
         elseif strcmp(condition,'high') == 1
             
-            lambda_high = [];
+            meta_high = [];
             ccSizes_high = [];
             plusSizes_high = [];
             
@@ -135,12 +135,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_high = [lambda_high; expt_lambda];
+                    meta_high = [meta_high; expt_meta];
                     ccSizes_high = [ccSizes_high; expt_sizes];
                     plusSizes_high = [plusSizes_high; expt_plus];
                     clear expt_lambda expt_sizes
@@ -151,7 +151,7 @@ for ee = 1:length(environment_order)
             
             
             % store condition data in cell corresponding to Condition Order
-            lambda{7} = lambda_high; 
+            metas{7} = meta_high; 
             sizes{7} = ccSizes_high; 
             plus{7} = plusSizes_high;
             
@@ -162,7 +162,7 @@ for ee = 1:length(environment_order)
         if condition == 30
             idx = [2,3,4]; % ID of experiments with this fluc timescale
             
-            lambda_30 = [];
+            meta_30 = [];
             ccSizes_30 = [];
             plusSizes_30 = [];
             
@@ -174,12 +174,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_30 = [lambda_30; expt_lambda];
+                    meta_30 = [meta_30; expt_meta];
                     ccSizes_30 = [ccSizes_30; expt_sizes];
                     plusSizes_30 = [plusSizes_30; expt_plus];
                     clear expt_lambda expt_sizes
@@ -189,7 +189,7 @@ for ee = 1:length(environment_order)
             
             
             % store condition data in cell corresponding to Condition Order
-            lambda{2} = lambda_30; 
+            metas{2} = meta_30; 
             sizes{2} = ccSizes_30; 
             plus{2} = plusSizes_30;
             
@@ -197,7 +197,7 @@ for ee = 1:length(environment_order)
         elseif condition == 300
             idx = [5,6,7]; % ID of experimennts with this fluc timescale
             
-            lambda_300 = [];
+            meta_300 = [];
             ccSizes_300 = [];
             plusSizes_300 = [];
             
@@ -209,12 +209,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_300 = [lambda_300; expt_lambda];
+                    meta_300 = [meta_300; expt_meta];
                     ccSizes_300 = [ccSizes_300; expt_sizes];
                     plusSizes_300 = [plusSizes_300; expt_plus];
                     
@@ -225,14 +225,14 @@ for ee = 1:length(environment_order)
             
             
             % store condition data in cell corresponding to Condition Order
-            lambda{3} = lambda_300; %range_lambda;
+            metas{3} = meta_300; %range_lambda;
             sizes{3} = ccSizes_300; %range_sizes;
             plus{3} = plusSizes_300;
             
         elseif condition == 900
             idx = [9,10,11,12]; % ID of experimennts with this fluc timescale
             
-            lambda_900 = [];
+            meta_900 = [];
             ccSizes_900 = [];
             plusSizes_900 = [];
             
@@ -244,12 +244,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_900 = [lambda_900; expt_lambda];
+                    meta_900 = [meta_900; expt_meta];
                     ccSizes_900 = [ccSizes_900; expt_sizes];
                     plusSizes_900 = [plusSizes_900; expt_plus];
                     clear expt_lambda expt_sizes
@@ -259,7 +259,7 @@ for ee = 1:length(environment_order)
             
             
             % store condition data in cell corresponding to Condition Order
-            lambda{4} = lambda_900; 
+            metas{4} = meta_900; 
             sizes{4} = ccSizes_900; 
             plus{4} = plusSizes_900;
             
@@ -267,7 +267,7 @@ for ee = 1:length(environment_order)
         elseif condition == 3600
             idx = [13,14,15]; % ID of experimennts with this fluc timescale
             
-            lambda_3600 = [];
+            meta_3600 = [];
             ccSizes_3600 = [];
             plusSizes_3600 = [];
             
@@ -279,12 +279,12 @@ for ee = 1:length(environment_order)
                 if ~isempty(expt_data)
                     
                     % isolate data
-                    expt_lambda = expt_data.meta(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                    expt_meta = expt_data.meta; % note: mu is all instananeous vals in each cell cycle
                     expt_sizes = expt_data.cc;
                     expt_plus = expt_data.plus1;
                     
                     % concanetate individual cell cycle values
-                    lambda_3600 = [lambda_3600; expt_lambda];
+                    meta_3600 = [meta_3600; expt_meta];
                     ccSizes_3600 = [ccSizes_3600; expt_sizes];
                     plusSizes_3600 = [plusSizes_3600; expt_plus];
                     clear expt_lambda expt_sizes
@@ -294,7 +294,7 @@ for ee = 1:length(environment_order)
             
             
             % store condition data in cell corresponding to Condition Order
-            lambda{5} = lambda_3600; 
+            metas{5} = meta_3600; 
             sizes{5} = ccSizes_3600;
             plus{5} = plusSizes_3600;
             
@@ -344,11 +344,13 @@ for cond = 1:length(environment_order)
 end
 clear cond lamb
 
+
 %% Part 4. bin added size by birth size
 
 % 0. initialize birth size bin and size columns
 binsize = 0.2; % cubic microns
 vol = 1; len = 2; wid = 3; sa2v = 4; % vol is currently hard coded below!
+lambda = 1; tau = 2;
 
 % 0. initialize colors for plotting
 palette = {'Indigo','DarkTurquoise','SteelBlue','DeepSkyBlue','DodgerBlue','GoldenRod','FireBrick'};
@@ -357,9 +359,11 @@ palette = {'Indigo','DarkTurquoise','SteelBlue','DeepSkyBlue','DodgerBlue','Gold
 % 1. loop through conditions
 for condition = 1:length(environment_order)
     
-    % 2. isolate added and birth size of interest
-    addedV = size_added{1,condition}(:,len);
-    birthV = size_birth{1,condition}(:,len);
+    % 2. isolate growth rate, tau, added and birth size of interest
+    addedV = size_added{1,condition}(:,vol);
+    birthV = size_birth{1,condition}(:,vol);
+    gr = metas{1,condition}(:,lambda);
+    interdiv = metas{1,condition}(:,tau);
     
     % 3. assign each birth size to a bin
     birth_bin = ceil(birthV/binsize);
@@ -371,8 +375,28 @@ for condition = 1:length(environment_order)
     adder_count = cellfun(@length, adder_binned);
     adder_sem = adder_std./sqrt(adder_count);
     
+    % 5. sort growth rate by birth bin
+    gr_binned = accumarray(birth_bin,gr,[],@(x) {x});
+    gr_mean = cellfun(@mean, gr_binned);
+    gr_std = cellfun(@std, gr_binned);
+    gr_count = cellfun(@length, gr_binned);
+    gr_sem = gr_std./sqrt(gr_count);
+    
+    % 6. sort interdivision time by birth bin
+    tau_binned = accumarray(birth_bin,interdiv,[],@(x) {x});
+    tau_mean = cellfun(@mean,tau_binned);
+    tau_std = cellfun(@std,tau_binned);
+    tau_count = cellfun(@length,tau_binned);
+    tau_sem = tau_std./sqrt(tau_count);
+    
+    
     figure(condition)
+    errorbar(gr_mean,gr_sem,'.','Color',rgb('Silver'))
+    hold on
+    errorbar(tau_mean/10,tau_sem/10,'.','Color',rgb('SlateGray'))
+    hold on
     errorbar(adder_mean,adder_sem,'o','Color',rgb(palette{condition}))
+    
     xlabel('birth vol x 0.2')
     ylabel('added vol')
     if isstring(environment_order)
