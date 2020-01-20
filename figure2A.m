@@ -16,8 +16,8 @@
 
 
 
-%  Last edit: jen, 2019 December 9
-%  Commit: first commit, timestep: 5 min
+%  Last edit: jen, 2020 Jan 20
+%  Commit: add tau as plotted feature
 
 
 
@@ -362,6 +362,7 @@ load('B1_ccSize.mat')
 lamb = 10; % column in compiled_data that is lambda
 sm = 2:9; % columns in compiled_data that are sizes
 bt = 13; % colum in compiled_ata that is timestamp at birth
+interdiv = 11;  % column in compiled_data that is interdivision time, tau
 
 
 % 1. accumulate data from each condition
@@ -381,6 +382,7 @@ for ee = 1:length(condArray)
     if condition == low
         
         lambda_low = [];
+        tau_low = [];
         birthSizes_low = [];
         birthTimes_low = [];
         
@@ -392,20 +394,23 @@ for ee = 1:length(condArray)
                 
                 % isolate data
                 expt_lambda = compiled_data{expt}{low,1}(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                expt_tau = compiled_data{expt}{low,1}(:,interdiv);
                 expt_sizes = compiled_data{expt}{low,1}(:,sm);
                 expt_times = compiled_data{expt}{low,1}(:,bt);
                 
                 % concanetate individual cell cycle values
                 lambda_low = [lambda_low; expt_lambda];
+                tau_low = [tau_low; expt_tau];
                 birthSizes_low = [birthSizes_low; expt_sizes];
                 birthTimes_low = [birthTimes_low; expt_times];
-                clear expt_lambda expt_sizes expt_times
+                clear expt_lambda expt_sizes expt_times expt_tau
             end
             
         end
         clear expt expt_data
         
         condition_lambda = lambda_low;
+        condition_tau = tau_low;
         condition_sizes = birthSizes_low;
         condition_times = birthTimes_low;
         
@@ -418,6 +423,7 @@ for ee = 1:length(condArray)
         combined = lower + upper;
         
         range_lambda = condition_lambda(combined == 2);
+        range_tau = condition_tau(combined == 2);
         range_sizes = condition_sizes(combined == 2,:);
         range_times = condition_times(combined == 2);
         clear condition_mean condition_std lower upper
@@ -425,6 +431,7 @@ for ee = 1:length(condArray)
         
         % store condition data
         sizes{low} = range_sizes;
+        tau{low} = range_tau;
         lambda{low} = range_lambda;
         birthTimes{low} = range_times;
         
@@ -433,6 +440,7 @@ for ee = 1:length(condArray)
     elseif condition == ave
         
         lambda_ave = [];
+        tau_ave = [];
         birthSizes_ave = [];
         birthTimes_ave = [];
         
@@ -444,14 +452,16 @@ for ee = 1:length(condArray)
                 
                 % isolate data
                 expt_lambda = compiled_data{expt}{ave,1}(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                expt_tau = compiled_data{expt}{ave,1}(:,interdiv);
                 expt_sizes = compiled_data{expt}{ave,1}(:,sm);
                 expt_times = compiled_data{expt}{ave,1}(:,bt);
                 
                 % concanetate individual cell cycle values
                 lambda_ave = [lambda_ave; expt_lambda];
+                tau_ave = [tau_ave; expt_tau];
                 birthSizes_ave = [birthSizes_ave; expt_sizes];
                 birthTimes_ave = [birthTimes_ave; expt_times];
-                clear expt_lambda expt_sizes expt_times
+                clear expt_lambda expt_sizes expt_times expt_tau
                 
             end
         end
@@ -459,6 +469,7 @@ for ee = 1:length(condArray)
         
         
         condition_lambda = lambda_ave;
+        condition_tau = tau_ave;
         condition_sizes = birthSizes_ave;
         condition_times = birthTimes_ave;
         
@@ -471,12 +482,14 @@ for ee = 1:length(condArray)
         combined = lower + upper;
         
         range_lambda = condition_lambda(combined == 2);
+        range_tau = condition_tau(combined == 2);
         range_sizes = condition_sizes(combined == 2,:);
         range_times = condition_times(combined == 2);
         clear condition_mean condition_std lower upper
         
         % store condition data
         lambda{ave} = range_lambda;
+        tau{ave} = range_tau;
         sizes{ave} = range_sizes;
         birthTimes{ave} = range_times;
         
@@ -484,6 +497,7 @@ for ee = 1:length(condArray)
     elseif condition == high
         
         lambda_high = [];
+        tau_high = [];
         birthSizes_high = [];
         birthTimes_high = [];
         
@@ -495,20 +509,23 @@ for ee = 1:length(condArray)
                 
                 % isolate data
                 expt_lambda = compiled_data{expt}{high,1}(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                expt_tau = compiled_data{expt}{high,1}(:,interdiv);
                 expt_sizes = compiled_data{expt}{high,1}(:,sm);
                 expt_times = compiled_data{expt}{high,1}(:,bt);
                 
                 % concanetate individual cell cycle values
                 lambda_high = [lambda_high; expt_lambda];
+                tau_high = [tau_high; expt_tau];
                 birthSizes_high = [birthSizes_high; expt_sizes];
                 birthTimes_high = [birthTimes_high; expt_times];
-                clear expt_lambda expt_sizes expt_times
+                clear expt_lambda expt_sizes expt_times expt_tau
                 
             end
         end
         clear expt expt_data
         
         condition_lambda = lambda_high;
+        condition_tau = tau_high;
         condition_sizes = birthSizes_high;
         condition_times = birthTimes_high;
         
@@ -521,12 +538,14 @@ for ee = 1:length(condArray)
         combined = lower + upper;
         
         range_lambda = condition_lambda(combined == 2);
+        range_tau = condition_tau(combined == 2);
         range_sizes = condition_sizes(combined == 2,:);
         range_times = condition_times(combined == 2);
         clear condition_mean condition_std lower upper
         
         % store condition data in cell corresponding to Condition Order
         lambda{high} = range_lambda;
+        tau{high} = range_tau;
         sizes{high} = range_sizes;
         birthTimes{high} = range_times;
         
@@ -534,6 +553,7 @@ for ee = 1:length(condArray)
     elseif condition == single_shift
         
         lambda_single = [];
+        tau_single = [];
         birthSizes_single = [];
         birthTimes_single = [];
         
@@ -545,20 +565,23 @@ for ee = 1:length(condArray)
                 
                 % isolate data
                 expt_lambda = compiled_data{expt}{single_shift,1}(:,lamb); % note: mu is all instananeous vals in each cell cycle
+                expt_tau = compiled_data{expt}{single_shift,1}(:,interdiv); 
                 expt_sizes = compiled_data{expt}{single_shift,1}(:,sm);
                 expt_times = compiled_data{expt}{single_shift,1}(:,bt);
                 
                 % concanetate individual cell cycle values
                 lambda_single = [lambda_single; expt_lambda];
+                tau_single = [tau_single; expt_tau];
                 birthSizes_single = [birthSizes_single; expt_sizes];
                 birthTimes_single = [birthTimes_single; expt_times];
-                clear expt_lambda expt_sizes
+                clear expt_lambda expt_sizes expt_tau
             end
         end
         clear expt expt_data
         
         
         condition_lambda = lambda_single;
+        condition_tau = tau_single;
         condition_sizes = birthSizes_single;
         condition_times = birthTimes_single;
         
@@ -571,12 +594,14 @@ for ee = 1:length(condArray)
         combined = lower + upper;
         
         range_lambda = condition_lambda(combined == 2);
+        range_tau = condition_tau(combined == 2);
         range_sizes = condition_sizes(combined == 2,:);
         range_times = condition_times(combined == 2);
         clear condition_mean condition_std lower upper
         
         % store condition data in cell corresponding to Condition Order
         lambda{single_shift} = range_lambda;
+        tau{single_shift} = range_tau;
         sizes{single_shift} = range_sizes;
         birthTimes{single_shift} = range_times;
         
@@ -585,10 +610,11 @@ for ee = 1:length(condArray)
 end
 clear single_shift low ave high condition ee expt arrayIndex
 clear condition_lambda condition_sizes condition_times
-clear range_lambda range_sizes range_times combined
+clear range_lambda range_sizes range_times combined range_tau
 clear birthSizes_single birthSizes_low birthSizes_ave birthSizes_high
 clear birthTimes_single birthTimes_low birthTimes_ave birthTimes_high
 clear lambda_single lambda_low lambda_ave lambda_high
+clear tau_single tau_low tau_ave tau_high
 
 
 %% Part 4. bin data by time at birth and plot
@@ -715,3 +741,141 @@ for metric = 1:length(sm)
     title(strcat('metric:',num2str(metric)))
 end
 
+
+%% Part 5; bin tau data by time at birth and plot
+
+
+% 0. initialize parameters for plotting
+palette = {'DodgerBlue','Indigo','GoldenRod','FireBrick'};
+shape = 'o';
+binsPerHour = 12; % 10 min bins
+shiftFactor = 10;
+
+% time bins of interest in this analysis
+minBin = binsPerHour*shiftFactor;
+
+
+figure(1)
+
+conditions = [1,2,3,4];
+counter_steady = 0;
+for kk = 1:length(conditions) % condition
+    
+    
+    % 1. determine current condition of interest
+    c = conditions(kk);
+    
+    
+    % 2. isolate condition data
+    %cond_sizes = sizes{c};
+    cond_taus = tau{c};
+    cond_times = birthTimes{c};
+    cond_lambda = lambda{c};
+    
+    
+    % 3. bin data into time bins
+    %    note: because timestamps are relative to shift time, the data
+    %    must first be shifted to avoided negative values, and then
+    %    shifted back after binning.
+    
+    cond_times_shifted = cond_times + shiftFactor;
+    bins_birth = ceil(cond_times_shifted * binsPerHour);
+    
+    % birth volume + 1 vs time of birth
+    %volBirth_plus = cond_sizes(:,metric);
+    %volBirth_binnedByBT = accumarray(bins_birth,volBirth_plus,[],@(x) {x});
+    
+    % tau vs time of birth
+    tau_binnedByBT = accumarray(bins_birth,cond_taus,[],@(x) {x});
+    
+    % lambda vs time of birth
+    lambda_binnedByBT = accumarray(bins_birth,cond_lambda,[],@(x) {x});
+    
+    
+    
+    % 4. generate time vectors for plotting
+    %    note: in time vector, zero = bin immediately before shift
+    %timeVector_BT = ((1:length(volBirth_binnedByBT))/binsPerHour) - shiftFactor;
+    timeVector_BT = ((1:length(tau_binnedByBT))/binsPerHour) - shiftFactor;
+    
+    
+    
+    % 6. plot what we want for reals
+    if c == 1
+        
+        % i. isolate data to time bins of interest
+        lambda_final = lambda_binnedByBT(minBin:end);
+        %volBirth_final = volBirth_binnedByBT(minBin:end);
+        tau_final = tau_binnedByBT(minBin:end);
+        timeVector_final = timeVector_BT(minBin:end);
+        
+        % ii. single shift in 30 min bins
+        %shift_Vb = cellfun(@mean,volBirth_final);
+        %shift_Vb_std = cellfun(@std,volBirth_final);
+        %shift_Vb_count = cellfun(@length,volBirth_final);
+        %shift_Vb_sem = shift_Vb_std./sqrt(shift_Vb_count);
+        
+        shift_tau = cellfun(@mean,tau_final);
+        shift_tau_std = cellfun(@std,tau_final);
+        shift_tau_count = cellfun(@length,tau_final);
+        shift_tau_sem = shift_tau_std./sqrt(shift_tau_count);
+        
+        shift_gr = cellfun(@mean,lambda_final);
+        shift_gr_std = cellfun(@std,lambda_final);
+        shift_gr_count = cellfun(@length,lambda_final);
+        shift_gr_sem = shift_gr_std./sqrt(shift_gr_count);
+        
+        cmap = parula(length(shift_gr)); % spread parula over length of 2d vector.
+        for tt = 1:length(shift_gr)
+            hold on
+            plot(shift_gr(tt),shift_tau(tt),'Color',cmap(tt,:),'Marker',shape,'MarkerSize',10,'LineWidth',2)
+            colorbar
+        end
+        clear shift_Vb shift_Vb_std shift_Vb_count shift_Vb_sem shift_gr shift_gr_std shift_gr_count shift_gr_sem
+        clear tt
+        
+    else
+        
+        % i. define plotting color
+        color = rgb(palette(c));
+        counter_steady = counter_steady + 1;
+        
+        % ii. isolate data from bins
+        lambda_trim1 = cond_lambda(bins_birth >= minBin);
+        %volume_birth_trim1 = volBirth_plus(bins_birth >= minBin);
+        tau_trim1 = cond_taus(bins_birth >= minBin);
+        bins_birth_trim1 = bins_birth(bins_birth >= minBin);
+        
+        % iii. calculate mean and sem
+        lambda_steady(counter_steady) = mean(lambda_trim1);
+        tau_steady(counter_steady) = mean(tau_trim1);
+        %volume_birth_steady(counter_steady) = mean(volume_birth_trim1);
+        
+        % iv. plot
+        hold on
+        plot(lambda_steady(counter_steady),tau_steady(counter_steady),'Color',color,'MarkerFaceColor',color,'Marker',shape,'MarkerSize',10,'LineWidth',2)
+        colorbar
+        
+    end
+    clear bins_birth bins_birth_trim1 bt lamb sigmas
+    clear cond_lambda cond_sizes cond_taus cond_times cond_times_shifted condArray
+    clear lambda_binnedByBT lambda_final tau_trim1
+    clear volBirth_*  volume_birth_trim1 lambda_trim1
+    
+end
+
+% 7. plot fit line between steady environments
+
+%fit = polyfit(lambda_steady,log(volume_birth_steady),1);
+%x = linspace(lambda_steady(1),lambda_steady(end),10);
+%y = fit(1)*x + fit(2);
+
+%figure(metric)
+%hold on
+%plot(x,y,'Color',rgb('SlateGray'))
+%axis([0 3.8 0.5 2.2])
+
+
+xlabel('lambda')
+title('upshift transition in interdivision time')
+ylabel('tau (min)')
