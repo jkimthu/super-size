@@ -15,8 +15,8 @@
 %            environments, using distribution of tau measured for each Vi
 
 
-%  Last edit: jen, 2020 Jan 19
-%  commit: simulations of growth and division using dynamic growth rate
+%  Last edit: jen, 2020 Jan 20
+%  commit: add simulations of growth and division with fixed tau
 % 
 
 
@@ -46,8 +46,7 @@ exptArray = [9:15]; % list experiments by index
 colorSpectrum = {'Indigo','DodgerBlue'};%,'DeepSkyBlue','Teal','MediumSeaGreen','GoldenRod','Gold'};
 %colorSpectrum = {'SlateGray','DarkCyan','CadetBlue','DeepSkyBlue','DodgerBlue','Navy','Indigo',};
 
-
-%% B. loop through each period and isolate growth rates
+%% B. loop through each experiment and isolate growth rates
 
 % 1. for all experiments in dataset
 counter15 = 1;
@@ -169,6 +168,7 @@ clear growthRt_binned growthRt isEnd period_current
 clear startTime specificColumn date filename exptCounter exptArray
 clear timeinPeriodFraction timestamps_final ee counter15 counter60
 
+save
 
 %% C. compile mean growth rate signal and approx. timestep vector
 
@@ -205,8 +205,6 @@ Vi_15 = nan(gen,1);
 
 % 0. timestep for each timescale
 t15 = (15/60)/binsPerPeriod; % timestep in hour
-t60 = 1/binsPerPeriod;
-
 
 % 0. initiation size, timestep, tau
 new_cell = 1; % 0 = division did not just happen
@@ -282,7 +280,6 @@ end
 % xlabel('Time (h)')
 % ylabel('Volume')
 % title('visualization 15 min')
-
 
 %% E. simulate cells in 60 min fluctuations, visualization
 %     start with same Vi
@@ -385,7 +382,7 @@ clear minTime new_cell period_frac specificGrowthRate
 clear index growthRates_final muT t t_cc tau
 clear timeInPeriodFraction V Vi Vt
 
-%% D. simulation analysis: plot mean Vi, added V vs Vi, tau vs Vi
+%% F. simulation analysis: plot mean Vi, added V vs Vi, tau vs Vi
 
 steadies = 50:1000;
 
@@ -446,3 +443,208 @@ plot(Vi_60(steadies),tau_60(steadies)*60,'o','Color',rgb(colorSpectrum{1}))
 ylabel('Interdivision time (min)')
 xlabel('Initial volume')
 legend('15 min','60 min')
+
+%% G. simulate cells in 15 min fluctuations, with no tau function, visualization
+%     start with same Vi
+%     use fixed tau
+%     use different mu(t)
+%     simulate 1000 generations
+
+for tau = .5:0.1:1
+    
+    % 0. start generation counter
+    gen = 1000;
+    g15 = 1;
+    
+    % 0. initialize vectors for data storage
+    tau_15 = nan(gen,1);
+    Vd_15 = nan(gen,1);
+    Vi_15 = nan(gen,1);
+    
+    % 0. timestep for each timescale
+    t15 = (15/60)/binsPerPeriod; % timestep in hour
+    
+    % 0. initiation size, timestep, tau
+    new_cell = 1; % 0 = division did not just happen
+    Vi = 2; %
+    period_frac = 1; % time counter for growth rate
+    t_cc = 0; % time counter for cell cycle
+    V = [];
+    t = [];
+    
+    counter_loop = 0; % each loop is another timestep
+    while g15 < gen+1
+        
+        counter_loop = counter_loop + 1;
+        
+        if new_cell == 1
+            % store current cell cycle Vi
+            Vi_15(g15) = Vi;
+        end
+        
+        % calculate exponent
+        muT = mufun15(period_frac)*t15; % mu(t)*t in hours
+        
+        % calculate new volume after timestep
+        if muT < 0
+            Vt = Vi;
+        else
+            Vt = Vi * 2^(muT);
+        end
+        
+        % calculate time into cell cycle
+        t_cc = t_cc + t15;
+        
+        % store timestep data
+        V(counter_loop) = Vt;
+        if counter_loop == 1
+            t(counter_loop) = t15;
+        else
+            t(counter_loop) = t(counter_loop-1) + t15;
+        end
+        
+        % determine whether cell divides
+        
+        if t_cc >= tau
+            
+            % division! store V_div and tau data
+            Vd_15(g15) = Vt;
+            tau_15(g15) = tau;
+            
+            % re-set parameters for next cell cycle
+            g15 = g15 + 1;
+            Vi = Vt/2;
+            new_cell = 1;
+            t_cc = 0;
+            
+        else
+            Vi = Vt;
+            new_cell = 0;
+        end
+        
+        if period_frac == 30
+            period_frac = 1;
+        else
+            period_frac = period_frac + 1;
+        end
+        
+    end
+    
+    figure(6)
+    hold on
+    plot(t,V)
+    axis([0 100 -5 100])
+    xlabel('Time (h)')
+    ylabel('Volume')
+    title('visualization 15 min, fixed tau')
+    
+    clear ans counter_loop experimentFolder expType g15 g60
+    clear minTime new_cell period_frac specificGrowthRate
+    clear index growthRates_final muT t t_cc tau
+    clear timeInPeriodFraction V Vi Vt
+    
+end
+legend('0.5','0.6','0.7','0.8','0.9','1')
+
+%% H. simulate cells in 60 min fluctuations, with no tau function, visualization
+%     start with same Vi
+%     use fixed tau
+%     use different mu(t)
+%     simulate 1000 generations
+
+for tau = .5:0.1:1
+    % 0. start generation counter
+    gen = 1000;
+    g60 = 1;
+    
+    % 0. initialize vectors for data storage
+    tau_60 = nan(gen,1);
+    Vd_60 = nan(gen,1);
+    Vi_60 = nan(gen,1);
+    
+    % 0. timestep for each timescale
+    t60 = 1/binsPerPeriod;
+    
+    
+    % 0. initiation size, timestep, tau
+    new_cell = 1; % 0 = division did not just happen
+    Vi = 2; %
+    period_frac = 1; % time counter for growth rate
+    t_cc = 0; % time counter for cell cycle
+    V = [];
+    t = [];
+    
+    counter_loop = 0; % each loop is another timestep
+    while g60 < gen+1
+        
+        counter_loop = counter_loop + 1;
+        
+        if new_cell == 1
+            % store current cell cycle Vi
+            Vi_60(g60) = Vi;
+        end
+        
+        % calculate exponent
+        muT = mufun60(period_frac)*t60; % mu(t)*t in hours
+        
+        % calculate new volume after timestep
+        if muT < 0
+            Vt = Vi;
+        else
+            Vt = Vi * 2^(muT);
+        end
+        
+        % calculate time into cell cycle
+        t_cc = t_cc + t60;
+        
+        % store timestep data
+        V(counter_loop) = Vt;
+        if counter_loop == 1
+            t(counter_loop) = t60;
+        else
+            t(counter_loop) = t(counter_loop-1) + t60;
+        end
+        
+        % determine whether cell divides
+        
+        if t_cc >= tau
+            
+            % division! store V_div and tau data
+            Vd_60(g60) = Vt;
+            tau_60(g60) = tau;
+            
+            % re-set parameters for next cell cycle
+            g60 = g60 + 1;
+            Vi = Vt/2;
+            %tau = -(17/60)*Vi + (64/60);
+            new_cell = 1;
+            t_cc = 0;
+            
+        else
+            Vi = Vt;
+            new_cell = 0;
+        end
+        
+        if period_frac == 30
+            period_frac = 1;
+        else
+            period_frac = period_frac + 1;
+        end
+        
+    end
+    
+    figure(6)
+    hold on
+    plot(t,V)
+    axis([0 100 -5 100])
+    xlabel('Time (h)')
+    ylabel('Volume')
+    title('visualization 60 min, fixed tau')
+    
+    clear ans counter_loop experimentFolder expType g15 g60
+    clear minTime new_cell period_frac specificGrowthRate
+    clear index growthRates_final muT t t_cc tau
+    clear timeInPeriodFraction V Vi Vt
+    
+end
+legend('0.5','0.6','0.7','0.8','0.9','1')
