@@ -17,8 +17,8 @@
 %  Part 4. fit best line
 
 
-%  Last edit: Jen Nguyen, 2019 Jan 16
-%  Commit: update to include growth rate and tau data
+%  Last edit: Jen Nguyen, 2019 Jan 20
+%  Commit: update to include surface area to volume ratio
 
 
 %  OK let's go!
@@ -360,8 +360,8 @@ palette = {'Indigo','DarkTurquoise','SteelBlue','DeepSkyBlue','DodgerBlue','Gold
 for condition = 1:length(environment_order)
     
     % 2. isolate growth rate, tau, added and birth size of interest
-    addedV = size_added{1,condition}(:,vol);
-    birthV = size_birth{1,condition}(:,vol);
+    addedV = size_added{1,condition}(:,sa2v);
+    birthV = size_birth{1,condition}(:,sa2v);
     gr = metas{1,condition}(:,lambda);
     interdiv = metas{1,condition}(:,tau);
     
@@ -396,15 +396,19 @@ for condition = 1:length(environment_order)
     errorbar(tau_mean/10,tau_sem/10,'.','Color',rgb('SlateGray'))
     hold on
     errorbar(adder_mean,adder_sem,'o','Color',rgb(palette{condition}))
+
     
+    %ylabel('added vol')
     xlabel('birth vol x 0.2')
-    ylabel('added vol')
+    ylabel('change in SA:V')
+    
     if isstring(environment_order)
         title(environment_order{condition})
     else
         title(num2str(environment_order{condition}))
     end
-    axis([3 53 0 7])
+    %axis([3 53 0 7])
+    axis([3 53 -5 7])
 
 end
 
