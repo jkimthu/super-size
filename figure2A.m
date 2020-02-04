@@ -17,7 +17,7 @@
 
 
 %  Last edit: jen, 2020 Jan 20
-%  Commit: add plot of tau vs. birth vol transition across shift
+%  Commit: add plot lambda, tau and birth vol across shift (time)
 
 
 %  OK let's go!
@@ -884,4 +884,136 @@ figure(2)
 xlabel('birth volume')
 ylabel('tau (min)')
 title('upshift: interdivision time vs birth volume')
+
+
+%% Part 6. plot growth rate, tau, and birth size over time
+
+% 0. initialize parameters for plotting
+palette = {'DodgerBlue','Indigo','GoldenRod','FireBrick'};
+colorz = {'Teal','Silver','SlateGray'}; % Vb, lambda, tau 
+
+shape = 'o';
+binsPerHour = 12; % 10 min bins
+shiftFactor = 10;
+
+
+% time bins of interest in this analysis
+minBin = binsPerHour*shiftFactor;
+metric_Vb = 1;
+
+%for metric = 1:length(sm)
+
+figure(1)
+
+conditions = [1,2,3,4];
+counter_steady = 0;
+for mm = 1:length(conditions) % condition
+    
+    
+    % 1. determine current condition of interest
+    c = conditions(mm);
+    
+    
+    % 2. isolate condition data
+    cond_sizes = sizes{c};
+    cond_times = birthTimes{c};
+    cond_lambda = lambda{c};
+    cond_taus_min = tau{c};
+    cond_taus_h = cond_taus_min/60;
+    
+    % 3. bin data into time bins
+    %    note: because timestamps are relative to shift time, the data
+    %    must first be shifted to avoided negative values, and then
+    %    shifted back after binning.
+    cond_times_shifted = cond_times + shiftFactor;
+    bins_birth = ceil(cond_times_shifted * binsPerHour);
+    
+    % birth volume + 1 vs time of birth
+    Vb = cond_sizes(:,metric_Vb);
+    Vb_binnedByBT = accumarray(bins_birth,Vb,[],@(x) {x});
+    
+    % lambda vs time of birth
+    lambda_binnedByBT = accumarray(bins_birth,cond_lambda,[],@(x) {x});
+    
+     % tau vs time of birth
+    tau_binnedByBT = accumarray(bins_birth,cond_taus_h,[],@(x) {x});
+    
+    
+    % 4. generate time vectors for plotting
+    %    note: in time vector, zero = bin immediately before shift
+    timeVector_BT = ((1:length(Vb_binnedByBT))/binsPerHour) - shiftFactor;
+    t_steady = [0 2.5 timeVector_final(end)];
+    
+    
+    % 6. plot what we want for reals
+    if c == 1
+        
+        % i. isolate data to time bins of interest
+        lambda_final = lambda_binnedByBT(minBin:end); % isolate data points to after shift
+        Vb_final = Vb_binnedByBT(minBin:end);
+        timeVector_final = timeVector_BT(minBin:end);
+        tau_final = tau_binnedByBT(minBin:end);
+        
+        % ii. single shift in 30 min bins
+        shift_Vb = cellfun(@mean,Vb_final);
+        shift_Vb_std = cellfun(@std,Vb_final);
+        shift_Vb_count = cellfun(@length,Vb_final);
+        shift_Vb_sem = shift_Vb_std./sqrt(shift_Vb_count);
+        
+        shift_gr = cellfun(@mean,lambda_final);
+        shift_gr_std = cellfun(@std,lambda_final);
+        shift_gr_count = cellfun(@length,lambda_final);
+        shift_gr_sem = shift_gr_std./sqrt(shift_gr_count);
+        
+        shift_tau = cellfun(@mean,tau_final);
+        shift_tau_std = cellfun(@std,tau_final);
+        shift_tau_count = cellfun(@length,tau_final);
+        shift_tau_sem = shift_tau_std./sqrt(shift_tau_count);
+        
+        
+        % plot!!
+        errorbar(timeVector_final,shift_Vb,shift_Vb_sem,'Color',rgb(colorz{1}),'LineWidth',2)
+        hold on
+        errorbar(timeVector_final,shift_gr,shift_gr_sem,'Color',rgb(colorz{2}),'LineWidth',2)
+        hold on
+        errorbar(timeVector_final,shift_tau,shift_tau_sem,'Color',rgb(colorz{3}),'LineWidth',2)
+        hold on
+        plot(timeVector_final,1./shift_gr,'Color',rgb(colorz{1}),'Marker',shape)
+        legend('Vb','gr','tau','1/gr')
+        
+        clear shift_Vb shift_Vb_std shift_Vb_count shift_Vb_sem shift_gr shift_gr_std shift_gr_count shift_gr_sem
+        clear tt
+        
+        
+    else
+        
+        % i. define plotting color
+        color = rgb(palette(c));
+        counter_steady = counter_steady + 1;
+        
+        % ii. isolate data from bins
+        lambda_trim1 = cond_lambda(bins_birth >= minBin);
+        Vb_trim1 = Vb(bins_birth >= minBin);
+        bins_birth_trim1 = bins_birth(bins_birth >= minBin);
+        
+        % iii. calculate mean and sem
+        lambda_steady(counter_steady) = mean(lambda_trim1);
+        Vb_steady(counter_steady) = mean(Vb_trim1);
+        
+        % iv. plot
+        hold on
+        plot(t_steady(c-1),Vb_steady(counter_steady),'Color',color,'MarkerFaceColor',color,'Marker',shape,'MarkerSize',10,'LineWidth',2)
+        hold on
+        plot(t_steady(c-1),lambda_steady(counter_steady),'Color',color,'Marker',shape,'MarkerSize',10,'LineWidth',2)
+        
+        
+    end
+    clear bins_birth bins_birth_trim1 bt lamb sigmas
+    clear cond_lambda cond_sizes cond_times cond_times_shifted condArray
+    clear lambda_binnedByBT lambda_final
+    clear volBirth_*  volume_birth_trim1 lambda_trim1
+    
+end
+axis([0 5.1 0 7])
+xlabel('Time since upshift (h)')
 
