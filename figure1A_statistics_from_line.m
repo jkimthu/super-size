@@ -175,9 +175,9 @@ for cond = 1:length(environment_order) % loop through each condition
         cc_x = current_x(cycle);
         cc_y = current_y_log(cycle);
         
-        %figure(1) % plot (x,y) of current cell 
-        %hold on
-        %plot(cc_x,cc_y,'o','Color',rgb('DarkCyan'))
+%         figure(1) % plot (x,y) of current cell 
+%         hold on
+%         plot(cc_x,cc_y,'o','Color',rgb('DarkCyan'))
         
         
         % i. find perpendicular line to fit
@@ -186,21 +186,21 @@ for cond = 1:length(environment_order) % loop through each condition
         cc_line_x = linspace(0,4,100);
         cc_line_y = cc_m*cc_line_x + cc_B;
         
-        %figure(1) % plots perpendicular line that goes through cell
-        %hold on
-        %plot(cc_line_x,cc_line_y,'Color',rgb('DarkCyan'))
-        %axis([0 4 0 4])
-        %grid on
-        %pbaspect([1 1 1])
+%         figure(1) % plots perpendicular line that goes through cell
+%         hold on
+%         plot(cc_line_x,cc_line_y,'Color',rgb('DarkCyan'))
+%         axis([0 4 0 4])
+%         grid on
+%         pbaspect([1 1 1])
         
         
         % ii. find intercept between two lines
         intercept_x = (cc_B - fit_B)/(fit_slope - cc_m);
         intercept_y = (cc_m * intercept_x) + cc_B;
         
-        %figure(1) % plot intercept between two lines (fit and cell)
-        %hold on
-        %plot(intercept_x,intercept_y,'o','Color',rgb('SlateGray'))
+%         figure(1) % plot intercept between two lines (fit and cell)
+%         hold on
+%         plot(intercept_x,intercept_y,'o','Color',rgb('SlateGray'))
       
         
         % iii. calculate distance between cell and fit
