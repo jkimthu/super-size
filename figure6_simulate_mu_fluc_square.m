@@ -43,7 +43,7 @@ qT = numstep/4;    % seconds, conversion to h occurs in simulation
 
 % 0. initialize colors per successive period
 %colorSpectrum = {'Indigo','MediumSlateBlue','DodgerBlue','DeepSkyBlue','Teal','DarkGreen','MediumSeaGreen','GoldenRod','DarkOrange','Red'};
-colorSpectrum = {'Indigo','DodgerBlue'};%,'DeepSkyBlue','Teal','MediumSeaGreen','GoldenRod','Gold'};
+%colorSpectrum = {'Indigo','DodgerBlue'};%,'DeepSkyBlue','Teal','MediumSeaGreen','GoldenRod','Gold'};
 %colorSpectrum = {'SlateGray','DarkCyan','CadetBlue','DeepSkyBlue','DodgerBlue','Navy','Indigo',};
 
 
@@ -82,6 +82,8 @@ for t_col = 1:length(T) % need to make this a loop for multiple timescales
     T_length = numstep(t_col);
     T_quarter = qT(t_col);
     mufun = [mu_high*ones(T_quarter,1); mu_low*ones(2*T_quarter,1); mu_high*ones(T_quarter,1)];
+    mu_functions{t_col} = mufun;
+    
     
     % 2. simulate!
     counter_loop = 0; % each loop is a timestep
@@ -154,9 +156,14 @@ for t_col = 1:length(T) % need to make this a loop for multiple timescales
     
 end
 
-mean(Vb)
-mean(Vd)
-mean(tau_mean)
+figure(3)
+histogram(Vb(50:1000,1),'FaceColor',rgb('DodgerBlue'))
+hold on
+histogram(Vb(50:1000,2),'FaceColor',rgb('Indigo'))
+legend('15','60')
+xlabel('Birth volume')
+ylabel('Cell count')
+
 
 %% Part 2. simulate cells in fixed transition fluctuations for each timescale 
 
@@ -270,16 +277,17 @@ for t_col = 1:length(T) % need to make this a loop for multiple timescales
 end
 
 figure(3)
-histogram(Vb_fixed(50:1000,1))
+histogram(Vb_fixed(50:1000,1),'FaceColor',rgb('DodgerBlue'))
 hold on
-histogram(Vb_fixed(50:1000,2))
+histogram(Vb_fixed(50:1000,2),'FaceColor',rgb('Indigo'))
 legend('15','60')
 xlabel('Birth volume')
 ylabel('Cell count')
 
-birthVol_mean = mean(Vb_fixed)
-tau_mean = mean(tau_fixed)
-lambda_mean = cellfun(@mean,mu_functions)
+%birthVol_mean = mean(Vb_fixed)
+%tau_mean = mean(tau_fixed)
+%lambda_mean = cellfun(@mean,mu_functions)
+
 
 %% F. simulation analysis: plot mean Vi, added V vs Vi, tau vs Vi
 
