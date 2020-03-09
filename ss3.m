@@ -1,49 +1,28 @@
-%% ss3 - plot division events in single shift environments
+%% ss3 - probability of division in single shift experiments
 
 
 % Goal: what is the lag between nutrient shift and changes in divison rate?
 
 %  Strategy:
 %
-%     0. initialize complete meta data
-%     0. for experiments of interest...
-%           1. collect experiment date and exclude outliers (2017-10-31 and monod experiments)
-%           2. initialize binning parameters
-%           3. load measured data for stable condition
-%           4. for stable average... 
-%                  5. isolate isDrop and timestamp data
-%                  6. correct time based on calculated lag in signal between junc and xy position
-%                  7. isolate birth events (isDrop == 1) and corresponding timestamps
-%                  8. PLOT ONE: number of tracked cells over time
-%                  9. PLOT TWO: birth events over time, normalized by tracks per bin
-%                 10. PLOT THREE: births normalized by cell count over period fraction
-%          11. repeat analysis for fluctuating environment, plotting fluc data over stable
+%     Part 0. initialize analysis
+%     Part 1. plot division events over time for each experimental replicate
+%             i.e. one plot per experiment
+
+%          1. initialize experiment meta data
+%          2. load measured experiment data   
+%          3. loop through shift, steady low and steady high conditions to...
+%          4. compile condition data matrix
+%          5. determine timepoints at which births occur
+%          6. bin birth times and tracks
+%          7. compute total birth events and tracks per time bin
+%          8. plot probability of division!
+%          9. plot shift time
 
 
 
-%           5. find average growth rate of stable average condition
-%                       i. isolate data
-%                      ii. remove data not in stabilized region
-%                     iii. remove zeros from mu data (always bounding start and end of tracks)
-%                      iv. calculate mean value for of mu and bvpr in stable
-%           6. for fluctuating condition, load measured data
-%                       i. isolate data of interest
-%                      ii. normalize mu and bvpr data by mean of stable average condition
-%                     iii. remove data not in stabilized region
-%                      iv. remove zeros from mu data (always bounding start and end of tracks)
-%           7. accumulate data by shifted time bin (period fraction)
-%                       i. from original timestamp, subtract shift = period/4 + offset
-%                      ii. re-define period to begin at start of high nutrient pulse
-%                     iii. bin data by period fraction
-%           8.  convert bin # to absolute time (in seconds)
-%           9.  calculate average and s.e.m. per timebin
-%          10.  plot, with repeated high nutrient half period at end
-%    11. repeat for all fluctuating experiments
-
-
-
-%  Last edit: Jen Nguyen, 2020 March 6
-%  Commit: probability of division in single shift experiments
+%  Last edit: Jen Nguyen, 2020 March 9
+%  Commit: edit comments for clarity
 
 % OK! Lez go!
 
@@ -58,8 +37,6 @@ clear
 % 0. initialize complete meta data
 cd('/Users/jen/Documents/StockerLab/Data_analysis/')
 load('storedMetaData.mat')
-%dataIndex = find(~cellfun(@isempty,storedMetaData));
-%experimentCount = length(dataIndex);
 
 
 % 0. designate index of experiments in meta data
@@ -94,7 +71,7 @@ for ee = 1:length(exp)
     clear filename dataFolder
     
     
-    % 3. for stable average and then fluctuating environment...
+    % 3. loop through shift, steady low and steady high conditions to... 
     environment = [1;2;4];
     ccData = cell(length(environment),1);
     
