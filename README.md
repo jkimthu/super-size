@@ -1,10 +1,10 @@
-## super-size
+# super-size
 Scripts plotting the effect of nutrient fluctuations on cell size
 
 
 
 
-# Figures:
+## Figures:
 
 1A. mean birth size vs mean growth rate of each nutrient condition
     size metrics: birth volume of cell cycle, birth volume of next cell cycle
@@ -14,15 +14,26 @@ Scripts plotting the effect of nutrient fluctuations on cell size
 
 
 
-# Supplementary Figures:
+## Supplementary Figures:
 
 
 
 
 
-# Data processing and organization:
+## Data processing and organization:
 
   All figures use input data compiled into a data structure by the following scripts:
 
   i. size_metrics
      This script loops through data files from each experimental replicate to compile a matrix of cell size measurements, organized by cell cycle.
+
+
+## Figures to figure stuff out
+
+saved as ss...(#).m
+1. 
+2.
+3. probability of division over time in single shift environments
+4. individual volume trajectories starting with cell experiencing a single nutrient upshift
+5. individual volume trajectories starting with cell experiencing a single nutrient downshift
+
