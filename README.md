@@ -38,4 +38,5 @@ saved as ss...(#).m
 5. individual volume trajectories starting with cell experiencing a single nutrient downshift
 6. 
 7. individual interdivision time vs individual growth rate (lambda) or birth volume
+8. tau_i vs Vb_i for each replicate of T = 15 and 60 min, same plot with fit slopes
 
