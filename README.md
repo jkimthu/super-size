@@ -36,4 +36,6 @@ saved as ss...(#).m
 3. probability of division over time in single shift environments
 4. individual volume trajectories starting with cell experiencing a single nutrient upshift
 5. individual volume trajectories starting with cell experiencing a single nutrient downshift
+6. 
+7. individual interdivision time vs individual growth rate (lambda) or birth volume
 
