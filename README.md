@@ -32,11 +32,18 @@ Scripts plotting the effect of nutrient fluctuations on cell size
 
 saved as ss...(#).m
 1. 
-2.
+2. simulate growth at different fluctuation timescales with measured mu(t)
 3. probability of division over time in single shift environments
 4. individual volume trajectories starting with cell experiencing a single nutrient upshift
 5. individual volume trajectories starting with cell experiencing a single nutrient downshift
 6. 
 7. individual interdivision time vs individual growth rate (lambda) or birth volume
 8. tau_i vs Vb_i for each replicate of T = 15 and 60 min, same plot with fit slopes
+9. predicting V_mean from linear fit of tau_i vs Vb_i
 
+
+## Figures and data for Jonasz
+
+### ss2 
+1. data vectors of mu(t) from T = 15 and 60 min. mu(t) is the mean of all mu_i calculated from all cells from all replicate conditions.
+2. MATLAB figure of mu(t) from T = 15 and 60 min plotted over the nutrient period (high:low:low:high)

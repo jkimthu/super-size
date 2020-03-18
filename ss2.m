@@ -13,8 +13,8 @@
 %        over simplification of a specific feature loses size shift
 
 
-%  Last edit: jen, 2020 Feb 17
-%  commit: rescaled mu functions with tstep = 5 sec
+%  Last edit: jen, 2020 Mar 18
+%  commit: plots n data for jonasz
 
 
 % Okie, go go let's go!
@@ -25,6 +25,7 @@ clear
 clc
 
 % 0. initialize stored mu functions
+cd('/Users/jen/Documents/StockerLab/Data_analysis')
 load('mu_functions')     % generated and saved from figure6_simulations
 colorSpectrum = {'DodgerBlue','Indigo'};
 
@@ -45,14 +46,15 @@ mufun(1:30,2) = mufun60;
 
 
 % 2. plot for visual confirmation
-% figure(1) % mean of replicate means
-% plot(1:length(mufun15),mufun15,'Color',rgb(colorSpectrum(1)),'LineWidth',1,'Marker','.')
-% hold on
-% plot(1:length(mufun60),mufun60,'Color',rgb(colorSpectrum(2)),'LineWidth',1,'Marker','.')
-% ylabel('Mu (1/h)')
-% xlabel('Period fraction')
-% legend('T = 15','T = 60')
-% title('growth rate function over time')
+figure(1) % mean of replicate means
+plot(1:length(mufun15),mufun15,'Color',rgb(colorSpectrum(1)),'LineWidth',1,'Marker','.')
+hold on
+plot(1:length(mufun60),mufun60,'Color',rgb(colorSpectrum(2)),'LineWidth',1,'Marker','.')
+ylabel('mu (1/h)')
+xlabel('Period fraction')
+legend('T = 15','T = 60')
+title('mu(t) mean instantaneous growth rate across replicates')
+axis([1 30 -0.5 2.2])
 
 clear signal_e exp_type
 
