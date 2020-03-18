@@ -45,5 +45,14 @@ saved as ss...(#).m
 ## Figures and data for Jonasz
 
 ### ss2 
-1. data vectors of mu(t) from T = 15 and 60 min. mu(t) is the mean of all mu_i calculated from all cells from all replicate conditions.
+1. data vectors of mu(t) from T = 15 and 60 min.
+mu(t) is the mean of all mu_i calculated from all cells from all replicate conditions.
 2. MATLAB figure of mu(t) from T = 15 and 60 min plotted over the nutrient period (high:low:low:high)
+
+### ss7
+1. seven plots (4 for T = 15 min and 3 for T = 60 min) of tau_i vs Vb_i.
+n = number of individial cells (division to division event) that contribute to the scatter
+subplot 1 is tau_i vs lambda_i
+subplot 2 is tau_i vs Vb_i
+linear fit to scatter is displayed for A and B
+
