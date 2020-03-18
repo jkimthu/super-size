@@ -40,6 +40,7 @@ saved as ss...(#).m
 7. individual interdivision time vs individual growth rate (lambda) or birth volume
 8. tau_i vs Vb_i for each replicate of T = 15 and 60 min, same plot with fit slopes
 9. predicting V_mean from linear fit of tau_i vs Vb_i
+10. tau_i vs Vb_i with data compiled from all replicates for each condition T = 15 and 60 min
 
 
 ## Figures and data for Jonasz
@@ -56,3 +57,6 @@ saved as ss...(#).m
 - subplot 2 is tau_i vs Vb_i
 - linear fit to scatter is displayed for A and B
 
+### ss10
+1. two plots (one for each condition, T = 15 and 60 min)
+- scatter of tau_i and Vb_i 
