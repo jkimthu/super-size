@@ -125,3 +125,21 @@ scatter of tau_i and Vb_i
 two plots (one for each condition, T = 15 and 60 min)
 scatter of tau_i and delta_i 
 delta_i = Vdiv_i - Vb_i
+
+### ss12
+1. delta_i vs Vb_i compiled from all replicates
+two plots (one for each condition, T = 15 and 60 min)
+
+### ss13
+1. Vdiv_i vs Vb_i compiled from all replicates
+two plots (one for each condition, T = 15 and 60 min)
+
+### ss14
+
+
+
+
+## Retired code
+
+1. Figure 6: simulations with varied growth rate function and fixed tau function
+2. Figure 7: simulations with different intialize size

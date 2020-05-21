@@ -527,6 +527,7 @@ for ff = 1:2
             % division! store V_div and tau data
             Vd_compiled(g_counter,ff) = Vt;
             tau_compiled(g_counter,ff) = tau;
+            tauT_compiled(g_counter,ff) = t(counter_loop);
             
             % re-set parameters for next cell cycle
             g_counter = g_counter + 1;
@@ -579,10 +580,12 @@ if mfun == 1
     ori60_15.Vb = Vb_compiled;
     ori60_15.Vd = Vd_compiled;
     ori60_15.tau = tau_compiled;
+    ori60_15.tauT = tauT_compiled;
 else
     ori60_60.Vb = Vb_compiled;
     ori60_60.Vd = Vd_compiled;
     ori60_60.tau = tau_compiled;
+    ori60_60.tauT = tauT_compiled;
 end
 
 
@@ -590,3 +593,113 @@ mean(Vb_compiled)
 std(Vb_compiled)
 
 
+%% Part 5. determine periodicity of birth events
+
+% 0. initialize binning parameters
+binsPerPeriod_resolved = 12;
+binsPerPeriod = [1.5,6]; % 15 and 60 min
+timescale_h = [0.25, 1];
+
+
+% 1. re-define period to begin at start of low nutrient pulse, by
+%      subtracting quarter period from corrected timestamp
+birthEvent_timestamps = ori60_60.tauT;
+birthEvent_taus = ori60_60.tau;
+birthEvent_Vb = ori60_60.Vb;
+birthEvent_Vd = ori60_60.Vd;
+shifted_birthTimestamps = birthEvent_timestamps-(timescale_h/4);
+
+
+% 2. trim data to remove first 50 generations
+shifted_birthTimestamps_trimmed = shifted_birthTimestamps(51:end,:);
+
+
+% 3. bin birth data by period fraction
+timeInPeriods_births = shifted_birthTimestamps_trimmed./timescale_h; % unit = sec/sec
+timeInPeriodFraction_births = timeInPeriods_births - floor(timeInPeriods_births);
+assignedBin_birthTimestamps = ceil(timeInPeriodFraction_births * binsPerPeriod_resolved);
+
+tau_binnedByPeriodFraction_15 = accumarray(assignedBin_birthTimestamps(:,1), birthEvent_taus(51:end,1), [], @(x) {x});
+tau_binnedByPeriodFraction_60 = accumarray(assignedBin_birthTimestamps(:,2), birthEvent_taus(51:end,2), [], @(x) {x});
+
+vb_binnedByPeriodFraction_15 = accumarray(assignedBin_birthTimestamps(:,1), birthEvent_Vb(51:end,1), [], @(x) {x});
+vb_binnedByPeriodFraction_60 = accumarray(assignedBin_birthTimestamps(:,2), birthEvent_Vb(51:end,2), [], @(x) {x});
+
+vd_binnedByPeriodFraction_15 = accumarray(assignedBin_birthTimestamps(:,1), birthEvent_Vd(51:end,1), [], @(x) {x});
+vd_binnedByPeriodFraction_60 = accumarray(assignedBin_birthTimestamps(:,2), birthEvent_Vd(51:end,2), [], @(x) {x});
+
+
+% calculate
+birthsPerPeriodFraction_15 = cellfun(@length,tau_binnedByPeriodFraction_15);
+birthsPerPeriodFraction_60 = cellfun(@length,tau_binnedByPeriodFraction_60);
+
+tausPerPeriodFraction(:,1) = cellfun(@mean,tau_binnedByPeriodFraction_15);
+tausPerPeriodFraction(:,2) = cellfun(@mean,tau_binnedByPeriodFraction_60);
+
+VbPerPeriodFraction(:,1) = cellfun(@mean, vb_binnedByPeriodFraction_15);
+VbPerPeriodFraction(:,2) = cellfun(@mean, vb_binnedByPeriodFraction_60);
+
+VdPerPeriodFraction(:,1) = cellfun(@mean, vd_binnedByPeriodFraction_15);
+VdPerPeriodFraction(:,2) = cellfun(@mean, vd_binnedByPeriodFraction_60);
+
+deltaPerPeriodFraction = VdPerPeriodFraction - VbPerPeriodFraction;
+
+
+
+% 4.  convert bin # to absolute time (sec)
+timePerBin = timescale_h./binsPerPeriod_resolved;  % in sec
+binPeriod = linspace(1, binsPerPeriod_resolved, binsPerPeriod_resolved);
+timePeriod(:,1) = timePerBin(1)*binPeriod';
+timePeriod(:,2) = timePerBin(2)*binPeriod';
+
+
+% 5. normalize binned births by total births
+birthsPerPeriodFraction_normalized(:,1) = birthsPerPeriodFraction_15./950;
+birthsPerPeriodFraction_normalized(:,2) = birthsPerPeriodFraction_60./950;
+
+
+
+figure(1)
+for cc = 1:2
+    subplot(1,2,cc)
+    stem(timePeriod(:,cc), VbPerPeriodFraction(:,cc),'Color',[0 0.7 0.7])
+    axis([min(timePeriod(:,cc)) max(timePeriod(:,cc)) 0 1])
+    title(strcat('fluc: ',num2str(timescale_h(cc))))
+    xlabel('time (h)')
+    ylabel('mean birth volume for births at period fraction')
+end
+
+figure(2)
+for cc = 1:2
+    subplot(1,2,cc)
+    stem(timePeriod(:,cc), tausPerPeriodFraction(:,cc),'Color',[0 0.7 0.7])
+    axis([min(timePeriod(:,cc)) max(timePeriod(:,cc)) 0 1])
+    title(strcat('fluc: ',num2str(timescale_h(cc))))
+    xlabel('time (h)')
+    ylabel('mean division time for births at period fraction')
+end
+
+figure(3)
+for cc = 1:2
+    subplot(1,2,cc)
+    stem(timePeriod(:,cc), birthsPerPeriodFraction_normalized(:,cc),'Color',[0 0.7 0.7])
+    axis([min(timePeriod(:,cc)) max(timePeriod(:,cc)) 0 0.2])
+    title(strcat('fluc: ',num2str(timescale_h(cc))))
+    xlabel('time (h)')
+    ylabel('probability of birth event, normalized by total')
+end
+
+figure(4)
+for cc = 1:2
+    subplot(1,2,cc)
+    stem(timePeriod(:,cc), deltaPerPeriodFraction(:,cc),'Color',[0 0.7 0.7])
+    axis([min(timePeriod(:,cc)) max(timePeriod(:,cc)) 0 1])
+    title(strcat('fluc: ',num2str(timescale_h(cc))))
+    xlabel('time (h)')
+    ylabel('added v for births at period fraction')
+end
+
+grid on
+
+%clear birthEvents birthEvent_timestamps binVector timeVector padding
+%clear binnedDrops isDrops stagePositions Time condition xy_start xy_end
