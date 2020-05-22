@@ -14,7 +14,7 @@
 
 
 %  Last edit: Jen Nguyen, 2020 May 21
-%  Commit: add part 3 to plot tau_i vs delta_i for steady conditions
+%  Commit: add part 3 to plot delta_i vs Vb_i for steady conditions
 
 %  OK let's go!
 

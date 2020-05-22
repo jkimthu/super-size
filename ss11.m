@@ -16,6 +16,7 @@
 %  Last edit: Jen Nguyen, 2020 May 21
 %  Commit: add part 3 to plot tau_i vs delta_i for steady conditions
 
+
 %  OK let's go!
 
 %% Part 0. initialize data, saved from figure1A_division.m
