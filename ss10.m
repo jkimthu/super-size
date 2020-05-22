@@ -14,7 +14,7 @@
 
 
 %  Last edit: Jen Nguyen, 2020 May 22
-%  Commit: add part 3 to plot tau_i vs Vb_i for steady conditions
+%  Commit: edit axes labels
 
 %  OK let's go!
 
@@ -289,11 +289,11 @@ axis([1 8 0 140])
 legend(num2str(numcells(1:3)))
 title('T = 15 min')
 ylabel('tau_i (min)')
-xlabel('delta_i')
+xlabel('Vb_i')
 
 figure(2) % cond_i = 2
 axis([1 8 0 140])
 legend(num2str(numcells(4:6)))
 title('T = 60 min')
 ylabel('tau_i (min)')
-xlabel('delta_i')
+xlabel('Vb_i')
