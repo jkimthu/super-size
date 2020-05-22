@@ -1,18 +1,20 @@
 %% ss11: tau_i vs delta_i compiled from all replicates
 
 
-%  Goal: for comparison with single replicate data
+%  Goal: compile replicate data from fluctuating and steady conditions and
+%        plot tau_i vs delta_i as a scatter
 
 
 %  Strategy: 
 %
 %  Part 0. initialize analysis
 %  Part 1. sort data by nutrient condition, keep replicates apart
-%  Part 2. calculate stats for each replicate
-%  Part 3. plot predictions vs measured data
+%  Part 2. compile & plot replicate data from each fluctuating condition
+%  Part 3. compile & plot replicate data from each steady condition
 
-%  Last edit: Jen Nguyen, 2020 May 16
-%  Commit: scatter of tau_i vs delta_i, compiled from all replicate data
+
+%  Last edit: Jen Nguyen, 2020 May 21
+%  Commit: add part 3 to plot tau_i vs delta_i for steady conditions
 
 %  OK let's go!
 
@@ -25,11 +27,11 @@ clc
 cd('/Users/jen/super-size/')
 load('storedMetaData.mat')
 load('A1_div_ccSize.mat')
-%lamb = 1; % column in compiled_data (meta) that is lambda
 
 
 % 0. initialize plotting parameters
 palette = {'DarkTurquoise','Chocolate'};
+palette_steady = {'DarkSlateBlue','DarkGoldenrod','DarkRed','SlateBlue','Goldenrod','Crimson'};
 environment_order = {'low',30,300,900,3600,'ave','high'};
 shape = 'o';
 
@@ -87,7 +89,7 @@ clear envr exp_cond data counter
 clear t0_5 t5 t15 t60
 
 
-%% Part 2. compile data from each replicate
+%% Part 2. compile replicate data from each fluctuating condition 
 
 % 0. initialize parameters for which calculate stats in organized_data
 vol_birth = 1;     % volume at birth = col in cc (compiled in figure1A_division.m)
@@ -98,9 +100,9 @@ tau = 2;    % interdivision time = col 2 in meta
 % 0. for each condition of interest
 conditionsOI = [900; 3600];
 counter = 0;
-numcells = [];
 delta_i = [];
 tau_i = [];
+
 for cond = 1:length(conditionsOI)
     
     % 1. isolate replicate data from each conditions
@@ -177,3 +179,126 @@ clear currCond currData col rep cond
 clear conditionsOI counter
 clear Vb_mean x y tau fluc high low ave
 
+
+%% Part 3. compile replicate data from each steady condition
+
+
+% 0. initialize parameters for which calculate stats in organized_data
+vol_birth = 1;     % volume at birth = col in cc (compiled in figure1A_division.m)
+vol_div = 2;     % volume at division = col in cc
+tau = 2;    % interdivision time = col 2 in meta
+
+
+% 0. for each fluctuating condition of interest
+conditionsOI = [900; 3600];
+numcells = [];
+
+for cond_i = 1:length(conditionsOI)
+    
+    
+    % 1. loop through steady conditions and compile replicate data
+    currCond_i = conditionsOI(cond_i);
+    if currCond_i == 900
+        rows_steady = 7:10;
+    elseif currCond_i == 3600
+        rows_steady = 11:13;
+    end
+    
+    conditions_steady = {'low','ave','high'};
+    color_counter = 0;
+    
+    for cond_ii = 1:length(conditions_steady)
+        
+        color_counter = color_counter + 1;
+        delta_i = [];
+        tau_i = [];
+
+        
+        % 1. isolate replicate data from each steady condition
+        currCond = conditions_steady{cond_ii};
+        
+        if strcmp(currCond,'low') == 1
+            col = 1;
+        elseif strcmp(currCond,'ave') == 1
+            col = 6;
+        elseif strcmp(currCond,'high') == 1
+            col = 7;
+        end
+        condData = organized_data(:,col);
+        clear col
+        
+        
+        % 2. use only steady data from fluctuating experiments
+        currData = condData(rows_steady);
+        noData = cellfun(@isempty,currData);
+        currData = currData(noData == 0);
+        clear noData
+        
+        
+        % 3. compile data from each replicate condition
+        for rep = 1:length(currData)
+            
+            % i. gather parameters
+            repData = currData{rep,1};
+            Vb = repData.cc(:,vol_birth);
+            Vdiv = repData.cc(:,vol_div);
+            dt = repData.meta(:,tau);
+            
+            % ii. keep only data within 95% of mean Vb
+            Vb_mean = mean(Vb);
+            sigma = std(Vb);
+            
+            Vb_trim1 = Vb(Vb < Vb_mean + 2*sigma);
+            Vdiv_trim1 = Vdiv(Vb < Vb_mean + 2*sigma);
+            dt_trim1 = dt(Vb < Vb_mean + 2*sigma);
+            
+            Vb_trim2 = Vb_trim1(Vb_trim1 > Vb_mean - 2*sigma);
+            Vdiv_trim2 = Vdiv_trim1(Vb_trim1 > Vb_mean - 2*sigma);
+            dt_trim2 = dt_trim1(Vb_trim1 > Vb_mean - 2*sigma);
+            clear dt_trim1 Vb_trim1 Vdiv_trim1 sigma
+            clear repData Vdiv Vb dt sigma
+            
+            % iii. concatenate data
+            delt = Vdiv_trim2 - Vb_trim2;
+            delta_i = [delta_i; delt];
+            tau_i = [tau_i; dt_trim2];
+            
+        end
+        clear Vb_trim2 Vdiv_trim2 delt dt_trim2
+        
+        % iv. plot
+        figure(cond_i)
+        scatter(delta_i,tau_i,'MarkerEdgeColor',rgb(palette_steady{color_counter}))
+        numcells = [numcells; length(delta_i)];
+        
+        % overlay fit
+        fit = polyfit(delta_i,tau_i,1);
+        x = linspace(min(delta_i),max(delta_i),10);
+        y = fit(1).*x + fit(2);
+        hold on
+        if cond_ii == 1
+            text(15,130,strcat('y=',num2str(fit(1)),'x+',num2str(fit(2))),'Color',rgb(palette_steady{color_counter}))
+        elseif cond_ii == 2
+            text(15,125,strcat('y=',num2str(fit(1)),'x+',num2str(fit(2))),'Color',rgb(palette_steady{color_counter}))
+        elseif cond_ii == 3
+            text(15,120,strcat('y=',num2str(fit(1)),'x+',num2str(fit(2))),'Color',rgb(palette_steady{color_counter}))
+        end
+        plot(x,y,'Color',rgb(palette_steady{color_counter}))
+        
+    end
+    
+end
+figure(1) % cond_i = 1
+axis([-5 30 0 140])
+legend(num2str(numcells(1:3)))
+title('T = 15 min')
+ylabel('tau_i (min)')
+xlabel('delta_i')
+
+figure(2) % cond_i = 2
+axis([-5 30 0 140])
+legend(num2str(numcells(4:6)))
+title('T = 60 min')
+ylabel('tau_i (min)')
+xlabel('delta_i')
+    
