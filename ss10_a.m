@@ -3,20 +3,25 @@
 
 %  Goal: compile replicate data from fluctuating and steady conditions and
 %        plot tau_i vs Vb_i as a scatter
+%        save slopes, intercepts, Vb, tau, and lambda per replicate
 
 
 %  Strategy: 
 %
 %  Part 0. initialize analysis
 %  Part 1. sort data by nutrient condition, keep replicates apart
-%  Part 2. loop through each condition and determine slope for each replicate
-%          plot tau_i vs Vb_i per condition grouped by fluc timescale 
-%  Part 3. calculate mean and stdev of slopes per condition, and
+%  Part 2. plot tau_i vs Vb_i per condition grouped by fluc timescale 
+%          determine slope and other data for each STEADY replicate
+%  Part 3. plot tau_i vs Vb_i per condition grouped by fluc timescale 
+%          determine slope and other data for each FLUCTUATING replicate
+%  Part 4. save data!
+%  Part 5. calculate mean and stdev of slopes per condition, and
 %          plot slope vs. growth rate from individual replicates
 
 
-%  Last edit: Jen Nguyen, 2020 May 27
-%  Commit: individual-based plot looking for trends in slope of tau_i vs Vb_i
+%  Last edit: Jen Nguyen, 2020 May 28
+%  Commit: add tau, growth rate and Vb to final output
+
 
 %  OK let's go!
 
@@ -103,17 +108,27 @@ clear low ave high fluc
 % 0. initialize parameters for which calculate stats in organized_data
 vol_birth = 1;     % volume at birth = col in cc (compiled in figure1A_division.m)
 tau = 2;    % interdivision time = col 2 in meta
+lamb = 1;   % mean growth rate = col 1 in meta
 
 
 % 0. group steady rows by timescale of fluctuating condition
 conditions_steady = {'low','ave','high'};
 Tgroup = {1:3; 4:6; 7:10; 11:13}; % T = 30 s; 5 min; 15 min; 60 min
-numcells = nan(4,3);
-yint = nan(4,3);
-slopes = nan(4,3);
 
 
 for ts = 1:length(Tgroup) % timescale groups
+    
+    
+    % 0. initialize data for storage
+    numcells = nan(4,3);
+    yint = nan(4,3);
+    slopes = nan(4,3);
+    Vb_mean = nan(4,3);
+    Vb_std= nan(4,3);
+    tau_mean = nan(4,3);
+    tau_std = nan(4,3);
+    lambda_mean = nan(4,3);
+    lambda_std = nan(4,3);
     
     
     % 1. loop through steady conditions and compile replicate data
@@ -152,19 +167,22 @@ for ts = 1:length(Tgroup) % timescale groups
             repData = currData{rep,1};
             Vb = repData.cc(:,vol_birth);
             dt = repData.meta(:,tau);
+            gr = repData.meta(:,lamb);
             
             
             % ii. keep only data within 95% of mean Vb
-            Vb_mean = mean(Vb);
+            Vb_meen = mean(Vb);
             sigma = std(Vb);
             
-            Vb_trim1 = Vb(Vb < Vb_mean + 2*sigma);
-            dt_trim1 = dt(Vb < Vb_mean + 2*sigma);
+            Vb_trim1 = Vb(Vb < Vb_meen + 2*sigma);
+            dt_trim1 = dt(Vb < Vb_meen + 2*sigma);
+            gr_trim1 = gr(Vb < Vb_meen + 2*sigma);
             
-            Vb_i = Vb_trim1(Vb_trim1 > Vb_mean - 2*sigma);
-            tau_i = dt_trim1(Vb_trim1 > Vb_mean - 2*sigma);
-            clear dt_trim1 Vb_trim1 sigma
-            clear repData Vb dt
+            Vb_i = Vb_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+            tau_i = dt_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+            lambda_i = gr_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+            clear dt_trim1 Vb_trim1 gr_trim1 sigma
+            clear repData Vb dt gr Vb_meen
             
             
             % iii. plot
@@ -178,19 +196,33 @@ for ts = 1:length(Tgroup) % timescale groups
             y = fit(1).*x + fit(2);
             hold on
             plot(x,y,'Color',rgb(palette_steady{rep,color_counter}))
-            
-            
-            % iv. store slope data
-            slopes(rep,color_counter) = fit(1);
-            yint(rep,color_counter) = fit(2);
             clear x y 
             
-        end
-        clear Vb_i tau_i
+            % iv. store data
+            slopes(rep,color_counter) = fit(1);
+            yint(rep,color_counter) = fit(2);
+            
+            Vb_mean(rep,color_counter) = mean(Vb_i);
+            Vb_std(rep,color_counter) = std(Vb_i);
+            
+            tau_mean(rep,color_counter) = mean(tau_i);
+            tau_std(rep,color_counter) = std(tau_i);
+            
+            lambda_mean(rep,color_counter) = mean(lambda_i);
+            lambda_std(rep,color_counter) = std(lambda_i);
+            clear Vb_i tau_i lambda_i
+            
+        end 
         
         ts_stats_steady{ts}.numcells = numcells;
         ts_stats_steady{ts}.slopes = slopes;
         ts_stats_steady{ts}.yint = yint;
+        ts_stats_steady{ts}.Vb_mean = Vb_mean;
+        ts_stats_steady{ts}.Vb_std = Vb_std;
+        ts_stats_steady{ts}.tau_mean = tau_mean;
+        ts_stats_steady{ts}.tau_std = tau_std;
+        ts_stats_steady{ts}.lambda_mean = lambda_mean;
+        ts_stats_steady{ts}.lambda_std = lambda_std;
         
     end
     
@@ -201,24 +233,37 @@ for ts = 1:length(Tgroup) % timescale groups
     xlabel('Vb_i')
     
 end
-clear yint numcells fit color_counter ts cond_ii rep
+clear yint slopes numcells fit color_counter ts cond_ii rep vol_birth lamb
+clear Vb_mean Vb_std tau_mean tau_std lambda_mean lambda_std
 
 
 %% Part 3. compile data from each fluctuating replicate
 
+
 % 0. initialize parameters for which calculate stats in organized_data
 metric = 1; % volume at birth = col in in cc
 tau = 2;    % interdivision time = col 2 in meta
+lamb = 1;   % mean growth rate = col 1 in meta
 
 
-% 0. for each condition of interest
-flucdata = 2:5;
+% 0. initialize data to be collected and stored
 numcells_fluc = nan(4,3);
 yint_fluc = nan(4,3);
 slopes_fluc = nan(4,3);
+Vb_mean_fluc = nan(4,3);
+Vb_std_fluc = nan(4,3);
+tau_mean_fluc = nan(4,3);
+tau_std_fluc = nan(4,3);
+lambda_mean_fluc = nan(4,3);
+lambda_std_fluc = nan(4,3);
+    
+
+% 0. for each condition of interest
+flucdata = 2:5;
+
 
 for ts = 1:length(flucdata)
-    
+ 
     
     % 1. isolate replicate data from each conditions
     col = flucdata(ts);
@@ -236,18 +281,21 @@ for ts = 1:length(flucdata)
         repData = currData{rep,1};
         Vb = repData.cc(:,metric);
         dt = repData.meta(:,tau);
+        gr = repData.meta(:,lamb);
         
         % ii. keep only data within 95% of mean Vb
-        Vb_mean = mean(Vb);
+        Vb_meen = mean(Vb);
         sigma = std(Vb);
         
-        Vb_trim1 = Vb(Vb < Vb_mean + 2*sigma);
-        dt_trim1 = dt(Vb < Vb_mean + 2*sigma);
+        Vb_trim1 = Vb(Vb < Vb_meen + 2*sigma);
+        dt_trim1 = dt(Vb < Vb_meen + 2*sigma);
+        gr_trim1 = gr(Vb < Vb_meen + 2*sigma);
         
-        Vb_i = Vb_trim1(Vb_trim1 > Vb_mean - 2*sigma);
-        tau_i = dt_trim1(Vb_trim1 > Vb_mean - 2*sigma);
-        clear dt_trim1 Vb_trim1 sigma
-        clear repData Vb dt sigma
+        Vb_i = Vb_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+        tau_i = dt_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+        lambda_i = gr_trim1(Vb_trim1 > Vb_meen - 2*sigma);
+        clear dt_trim1 Vb_trim1 gr_trim1 sigma
+        clear repData Vb dt gr Vb_meen
         
         
         % iii. plot
@@ -261,16 +309,24 @@ for ts = 1:length(flucdata)
         y = fit(1).*x + fit(2);
         hold on
         plot(x,y,'Color',rgb(palette_fluc{rep}))
+        clear x y
         
         
         % iv. store slope data
         slopes_fluc(rep,ts) = fit(1);
         yint_fluc(rep,ts) = fit(2);
-        clear x y
         
+        Vb_mean_fluc(rep,ts) = mean(Vb_i);
+        Vb_std_fluc(rep,ts) = std(Vb_i);
+        
+        tau_mean_fluc(rep,ts) = mean(tau_i);
+        tau_std_fluc(rep,ts) = std(tau_i);
+        
+        lambda_mean_fluc(rep,ts) = mean(lambda_i);
+        lambda_std_fluc(rep,ts) = std(lambda_i);
+        clear Vb_i tau_i lambda_i
         
     end
-    clear Vb_i tau_i
     
     figure(ts)
     axis([1 8 0 140])
@@ -281,7 +337,21 @@ for ts = 1:length(flucdata)
 end
 clear fit color_counter ts col rep
 
+
 %% Part 4. save data!
 
-save('ss10_a.mat', 'ts_stats_steady','numcells_fluc','slopes_fluc','yint_fluc')
+save('ss10_a.mat', 'ts_stats_steady','numcells_fluc','slopes_fluc','yint_fluc','Vb_mean_fluc','Vb_std_fluc','tau_mean_fluc','tau_std_fluc','lambda_mean_fluc','lambda_std_fluc')
+
+
+%% Part 5. calculate stats
+
+clear
+clc
+
+% 0. initialize data
+load('ss10_a.mat')
+
+
+% 1. 
+
 
