@@ -19,8 +19,8 @@
 %          plot slope vs. growth rate from individual replicates
 
 
-%  Last edit: Jen Nguyen, 2020 May 28
-%  Commit: add tau, growth rate and Vb to final output
+%  Last edit: Jen Nguyen, 2020 June 1
+%  Commit: bug fix, stats calculation and plotting slope vs growth rate
 
 
 %  OK let's go!
@@ -247,15 +247,15 @@ lamb = 1;   % mean growth rate = col 1 in meta
 
 
 % 0. initialize data to be collected and stored
-numcells_fluc = nan(4,3);
-yint_fluc = nan(4,3);
-slopes_fluc = nan(4,3);
-Vb_mean_fluc = nan(4,3);
-Vb_std_fluc = nan(4,3);
-tau_mean_fluc = nan(4,3);
-tau_std_fluc = nan(4,3);
-lambda_mean_fluc = nan(4,3);
-lambda_std_fluc = nan(4,3);
+numcells_fluc = nan(4,4);
+yint_fluc = nan(4,4);
+slopes_fluc = nan(4,4);
+Vb_mean_fluc = nan(4,4);
+Vb_std_fluc = nan(4,4);
+tau_mean_fluc = nan(4,4);
+tau_std_fluc = nan(4,4);
+lambda_mean_fluc = nan(4,4);
+lambda_std_fluc = nan(4,4);
     
 
 % 0. for each condition of interest
@@ -316,6 +316,7 @@ for ts = 1:length(flucdata)
         slopes_fluc(rep,ts) = fit(1);
         yint_fluc(rep,ts) = fit(2);
         
+        %Vb_mean(rep,color_counter) = mean(Vb_i);
         Vb_mean_fluc(rep,ts) = mean(Vb_i);
         Vb_std_fluc(rep,ts) = std(Vb_i);
         
@@ -349,9 +350,350 @@ clear
 clc
 
 % 0. initialize data
+cd('/Users/jen/super-size/')
 load('ss10_a.mat')
 
 
-% 1. 
+
+% 1. calculate mean, standard deviation and coefficient of variation 
+%    between replicates from FLUCTUATING conditions
+
+slopes.mean = nanmean(slopes_fluc);
+slopes.std = nanstd(slopes_fluc);
+slopes.cv = (slopes.std./slopes.mean) * 100;
+
+yint.mean = nanmean(yint_fluc);
+yint.std = nanstd(yint_fluc);
+yint.cv = (yint.std./yint.mean) * 100;
+
+Vb.mean = nanmean(Vb_mean_fluc);
+Vb.std = nanstd(Vb_mean_fluc);
+Vb.cv = (Vb.std./Vb.mean) * 100;
+
+tau.mean = nanmean(tau_mean_fluc);
+tau.std = nanstd(tau_mean_fluc);
+tau.cv = (tau.std./tau.mean) * 100;
+
+lambda.mean = nanmean(lambda_mean_fluc);
+lambda.std = nanstd(lambda_mean_fluc);
+lambda.cv = (lambda.std./lambda.mean) * 100;
+
+
+% 2. calculate mean, standard deviation and coefficient of variation 
+%    between replicates from STEADY conditions
+
+% A. separated by parallel fluctuation timescale
+%    i. birth volume
+xx = nan(4,3);
+yy = nan(4,3);
+for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
+    xx(tscale,:) = nanmean(ts_stats_steady{1,tscale}.Vb_mean);
+    yy(tscale,:) = nanstd(ts_stats_steady{1,tscale}.Vb_mean);
+end
+Vb.mean_steady_A = xx;
+Vb.std_steady_A = yy;
+Vb.cv_steady_A = (yy./xx) * 100;
+clear xx yy tscale
+
+%   ii. division time (tau)
+aa = nan(4,3);
+bb = nan(4,3);
+for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
+    aa(tscale,:) = nanmean(ts_stats_steady{1,tscale}.tau_mean);
+    bb(tscale,:) = nanstd(ts_stats_steady{1,tscale}.tau_mean);
+end
+tau.mean_steady_A = aa;
+tau.std_steady_A = bb;
+tau.cv_steady_A = (bb./aa) * 100;
+clear aa bb tscale
+
+%  iii. growth rate (lambda)
+qq = nan(4,3);
+rr = nan(4,3);
+for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
+    qq(tscale,:) = nanmean(ts_stats_steady{1,tscale}.lambda_mean);
+    rr(tscale,:) = nanstd(ts_stats_steady{1,tscale}.lambda_mean);
+end
+lambda.mean_steady_A = qq;
+lambda.std_steady_A = rr;
+lambda.cv_steady_A = (rr./qq) * 100;
+clear qq rr tscale
+
+% iv. slopes of tau_i vs. Vb_i plot
+cc = nan(4,3);
+dd = nan(4,3);
+for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
+    cc(tscale,:) = nanmean(ts_stats_steady{1,tscale}.slopes);
+    dd(tscale,:) = nanstd(ts_stats_steady{1,tscale}.slopes);
+end
+Vb.mean_steady_A = cc;
+Vb.std_steady_A = dd;
+Vb.cv_steady_A = (dd./cc) * 100;
+clear cc dd tscale
+
+% v. y-intercept of tau_i vs. Vb_i plot
+ee = nan(4,3);
+ff = nan(4,3);
+for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
+    ee(tscale,:) = nanmean(ts_stats_steady{1,tscale}.yint);
+    ff(tscale,:) = nanstd(ts_stats_steady{1,tscale}.yint);
+end
+Vb.mean_steady_A = ee;
+Vb.std_steady_A = ff;
+Vb.cv_steady_A = (ff./ee) * 100;
+clear ee ff tscale
+
+
+% B. compiled by steady nutrient condition
+ss = [];
+tt = [];
+uu = [];
+vv = [];
+ww = [];
+for tscale = 1:4
+    ss = [ss; ts_stats_steady{1,tscale}.Vb_mean];     % Vb
+    tt = [tt; ts_stats_steady{1,tscale}.tau_mean];    % tau
+    uu = [uu; ts_stats_steady{1,tscale}.lambda_mean]; % lambda
+    vv = [vv; ts_stats_steady{1,tscale}.slopes];
+    ww = [ww; ts_stats_steady{1,tscale}.yint];
+end
+clear tscale
+
+% Vb
+Vb.mean_steady_B = nanmean(ss);
+Vb.std_steady_B = nanstd(ss);
+Vb.cv_steady_B = (Vb.std_steady_B./Vb.mean_steady_B) * 100;
+
+% tau
+tau.mean_steady_B = nanmean(tt);
+tau.std_steady_B = nanstd(tt);
+tau.cv_steady_B = (tau.std_steady_B./tau.mean_steady_B) * 100;
+
+% lambda
+lambda.mean_steady_B = nanmean(uu);
+lambda.std_steady_B = nanstd(uu);
+lambda.cv_steady_B = (lambda.std_steady_B./lambda.mean_steady_B) * 100;
+
+% slopes of tau_i vs. Vb_i plot
+slopes.mean_steady_B = nanmean(vv);
+slopes.std_steady_B = nanstd(vv);
+slopes.cv_steady_B = (slopes.std_steady_B./slopes.mean_steady_B) * 100;
+
+% y-intercepts of tau_i vs. Vb_i plot
+yint.mean_steady_B = nanmean(ww);
+yint.std_steady_B = nanstd(ww);
+yint.cv_steady_B = (yint.std_steady_B./yint.mean_steady_B) * 100;
+
+clear ss tt uu vv ww
+%clear lambda_mean_fluc lambda_std_fluc numcells_fluc slopes_fluc yint_fluc
+%clear tau_mean_fluc tau_std_fluc Vb_mean_fluc Vb_std_fluc ts_stats_steady
+
+
+%% Part 6. plot slopes (per replicate) vs. lambda, tau and Vb
+%          also plot y-intercepts (per replicate vs. lambda, tau and Vb)
+
+clear
+clc
+
+% 0. initialize data
+cd('/Users/jen/super-size/')
+load('ss10_a.mat')
+
+% 0. initialize colors for plotting
+palette_steady = {'Indigo','GoldenRod','FireBrick'};
+palette_fluc = {'RoyalBlue','CornflowerBlue','DeepSkyBlue','CadetBlue'};
+    
+
+% 1. concatenate slope, lambda, tau and Vb data from steady conditions
+low=1; ave=2; high=3; % column in ts_stats_steady
+
+slopes_steady = [];
+yints_steady = [];
+lambda_mean_steady = [];
+tau_mean_steady = [];
+Vb_mean_steady = [];
+
+lambda_std_steady = [];
+tau_std_steady = [];
+Vb_std_steady = [];
+
+numcells_steady = [];
+for ts = 1:length(ts_stats_steady)
+    
+    slopes_steady = [slopes_steady; ts_stats_steady{1,ts}.slopes];
+    yints_steady = [yints_steady; ts_stats_steady{1,ts}.yint];
+    lambda_mean_steady = [lambda_mean_steady; ts_stats_steady{1,ts}.lambda_mean];
+    tau_mean_steady = [tau_mean_steady; ts_stats_steady{1,ts}.tau_mean];
+    Vb_mean_steady = [Vb_mean_steady; ts_stats_steady{1,ts}.Vb_mean];
+    
+    lambda_std_steady = [lambda_std_steady; ts_stats_steady{1,ts}.lambda_std];
+    tau_std_steady = [tau_std_steady; ts_stats_steady{1,ts}.tau_std];
+    Vb_std_steady = [Vb_std_steady; ts_stats_steady{1,ts}.Vb_std];
+    
+    numcells_steady = [numcells_steady; ts_stats_steady{1,ts}.numcells];
+    
+end
+clear ts
+
+
+
+% 2. calculate s.e.m. for lambda, tau and Vb
+lambda_sem_steady = lambda_std_steady./sqrt(numcells_steady);
+lambda_sem_fluc = lambda_std_fluc./sqrt(numcells_fluc);
+
+tau_sem_steady = tau_std_steady./sqrt(numcells_steady);
+tau_sem_fluc = tau_std_fluc./sqrt(numcells_fluc);
+
+Vb_sem_steady = Vb_std_steady./sqrt(numcells_steady);
+Vb_sem_fluc = Vb_std_fluc./sqrt(numcells_fluc);
+
+
+
+
+% 3. plot data from STEADY conditions
+for sc = 1:high
+    
+    % i. define color by condition
+    sc_color = rgb(palette_steady{sc});
+
+    % ii. isolate data by condition column
+    sc_slope = slopes_steady(:,sc);
+    sc_yint = yints_steady(:,sc);
+    
+    sc_lambda_means = lambda_mean_steady(:,sc);
+    sc_lambda_sem = lambda_sem_steady(:,sc);
+    
+    sc_tau_means = tau_mean_steady(:,sc);
+    sc_tau_sem = tau_sem_steady(:,sc);
+    
+    sc_Vb_means = Vb_mean_steady(:,sc);
+    sc_Vb_sem = Vb_sem_steady(:,sc);
+    
+    % iii. plot data
+    figure(1) % slope vs lambda (mean +/- sem)
+    scatter(sc_lambda_means,sc_slope,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_lambda_means,sc_slope,sc_lambda_sem,'.','horizontal','Color',sc_color)
+    
+    figure(2) % slope vs tau (mean +/- sem)
+    scatter(sc_tau_means,sc_slope,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_tau_means,sc_slope,sc_tau_sem,'.','horizontal','Color',sc_color)
+    
+    figure(3) % slope vs Vb (mean +/- sem)
+    scatter(sc_Vb_means,sc_slope,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_Vb_means,sc_slope,sc_Vb_sem,'.','horizontal','Color',sc_color)
+    
+    figure(4) % y-int vs lambda (mean +/- sem)
+    scatter(sc_lambda_means,sc_yint,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_lambda_means,sc_yint,sc_lambda_sem,'.','horizontal','Color',sc_color)
+    
+    figure(5) % y-int vs tau (mean +/- sem)
+    scatter(sc_tau_means,sc_yint,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_tau_means,sc_yint,sc_tau_sem,'.','horizontal','Color',sc_color)
+    
+    figure(6) % y-int vs Vb (mean +/- sem)
+    scatter(sc_Vb_means,sc_yint,100,'filled','MarkerFaceColor',sc_color)
+    hold on
+    errorbar(sc_Vb_means,sc_yint,sc_Vb_sem,'.','horizontal','Color',sc_color)
+    
+end
+figure(1)
+xlabel('lambda (1/h)')
+ylabel('slope (tau_i vs Vb_i)')
+
+figure(2)
+xlabel('tau (min)')
+ylabel('slope (tau_i vs Vb_i)')
+
+figure(3)
+xlabel('Vb (cubic um)')
+ylabel('slope (tau_i vs Vb_i)')
+
+figure(4)
+xlabel('lambda (1/h)')
+ylabel('y-intercept (tau_i vs Vb_i)')
+
+figure(5)
+xlabel('tau (min)')
+ylabel('y-intercept (tau_i vs Vb_i)')
+
+figure(6)
+xlabel('Vb (cubic um)')
+ylabel('y-intercept (tau_i vs Vb_i)')
+
+clear sc_slope sc_lambda_means sc_lambda_sem sc_tau_means sc_yint
+clear sc_tau_sem sc_Vb_means sc_Vb_sem sc sc_color
+
+
+
+% 4. plot data from FLUCTUATING conditions
+
+
+for fc = 1:4
+   
+    % i. define color by condition
+    fc_color = rgb(palette_fluc{fc});
+
+    % ii. isolate data by condition column
+    fc_slope = slopes_fluc(:,fc);
+    fc_yint = yint_fluc(:,fc);
+    
+    fc_lambda_means = lambda_mean_fluc(:,fc);
+    fc_lambda_sem = lambda_sem_fluc(:,fc);
+    
+    fc_tau_means = tau_mean_fluc(:,fc);
+    fc_tau_sem = tau_sem_fluc(:,fc);
+    
+    fc_Vb_means = Vb_mean_fluc(:,fc);
+    fc_Vb_sem = Vb_sem_fluc(:,fc);
+    
+    % iii. plot data
+    figure(1) % slope vs lambda (mean +/- sem)
+    hold on
+    scatter(fc_lambda_means,fc_slope,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_lambda_means,fc_slope,fc_lambda_sem,'.','horizontal','Color',fc_color)
+    
+    figure(2) % slope vs tau (mean +/- sem)
+    hold on
+    scatter(fc_tau_means,fc_slope,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_tau_means,fc_slope,fc_tau_sem,'.','horizontal','Color',fc_color)
+
+    figure(3) % slope vs Vb (mean +/- sem)
+    hold on
+    scatter(fc_Vb_means,fc_slope,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_Vb_means,fc_slope,fc_Vb_sem,'.','horizontal','Color',fc_color)
+    
+    figure(4) % y-int vs lambda (mean +/- sem)
+    hold on
+    scatter(fc_lambda_means,fc_yint,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_lambda_means,fc_yint,fc_lambda_sem,'.','horizontal','Color',fc_color)
+    
+    figure(5) % y-int vs tau (mean +/- sem)
+    hold on
+    scatter(fc_tau_means,fc_yint,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_tau_means,fc_yint,fc_tau_sem,'.','horizontal','Color',fc_color)
+
+    figure(6) % y-int vs Vb (mean +/- sem)
+    hold on
+    scatter(fc_Vb_means,fc_yint,100,'filled','MarkerFaceColor',fc_color)
+    hold on
+    errorbar(fc_Vb_means,fc_yint,fc_Vb_sem,'.','horizontal','Color',fc_color)
+    
+    
+end
+clear fc fc_color fc_slope fc_lambda_means fc_lambda_sem
+clear fc_tau_means fc_tau_sem fc_Vb_means fc_Vb_sem
+
+
+
 
 

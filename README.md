@@ -123,7 +123,7 @@ scatter of tau_i and Vb_i
 2. ss10_a.m
 data for individual replicates per condition, grouped by timescale of fluc condition
 metrics: slopes and intercepts of tau_i vs. Vb_i, tau_i, lambda_i, and number of cells
-looks for variability between replicates and plots slope vs lambda
+looks for variability between replicates and plots slope vs lambda, tau and Vb
 
 ### ss11
 1. tau_i vs delta_i compiled from all replicates
