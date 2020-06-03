@@ -140,6 +140,19 @@ two plots (one for each condition, T = 15 and 60 min)
 two plots (one for each condition, T = 15 and 60 min)
 
 ### ss14
+single-cell determination of slope between tau_i and Vb_i.
+plot single-cell tau_i and Vb_i over time in steady environments:
+1. steady low
+2. steady ave
+3. steady high
+
+### ss15
+single-cell determination of slope between tau_i and Vb_i.
+plot single-cell tau_i and Vb_i across transitions:
+1. steady-state transitions (low to high)
+2. steady-state transitions (high to low)
+3. steady-state low to fluctuating (T = 60min) 
+
 
 
 
