@@ -147,12 +147,25 @@ plot single-cell tau_i and Vb_i over time in steady environments:
 3. steady high
 
 ### ss15
+// still to do:
 single-cell determination of slope between tau_i and Vb_i.
 plot single-cell tau_i and Vb_i across transitions:
 1. steady-state transitions (low to high)
 2. steady-state transitions (high to low)
 3. steady-state low to fluctuating (T = 60min) 
+fit slope across small increments
 
+### ss16
+is single-cell slope directly related to average whole dataset slope?
+answer: seems so! though numbers are not a direct match
+-compare distributions of single cells (tau_i divided by Vb_i) with distribution of replicate averages
+-comparable distributions suggest a difference from size vs growth rate plot in Taheri which shows difference between averaged and individual level trends
+
+### ss17
+// still to do: directly related to ss10a (just the single cell version)
+for each single cell, divide tau_i by Vb_i
+plot single cell scatter for each replicate condition, and mean plotted in ss10a (other means faded?)
+test whether individual vs average trend is different or similar.
 
 
 
