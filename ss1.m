@@ -169,35 +169,35 @@ for ii = 1:total_idx
     rep_tau_stats{ii} = divtime;
     rep_counts(ii) = cell_count;
     
-    
-    % iii. plot histogram of all parameters
-    figure(1)
-    histogram(gr,'FaceColor',color)
-    xlabel('mean growth rate')
-    xlim([0 5])
-    title(condition)
-    
-    figure(2)
-    histogram(Vb,'FaceColor',color)
-    xlabel('birth volume')
-    title(condition)
-    
-    figure(3)
-    histogram(dt,'FaceColor',color)
-    xlabel('interdivision time')
-    xlim([0 80])
-    title(condition)
-    
+%     
+%     % iii. plot histogram of all parameters
+%     figure(1)
+%     histogram(gr,'FaceColor',color)
+%     xlabel('mean growth rate')
+%     xlim([0 5])
+%     title(condition)
+%     
+%     figure(2)
+%     histogram(Vb,'FaceColor',color)
+%     xlabel('birth volume')
+%     title(condition)
+%     
+%     figure(3)
+%     histogram(dt,'FaceColor',color)
+%     xlabel('interdivision time')
+%     xlim([0 80])
+%     title(condition)
+%     
     
     % vi. save and close for next loop
-    figure(1)
-    saveas(gcf,strcat('hist-gr-',num2str(counter)),'epsc')
-    
-    figure(2)
-    saveas(gcf,strcat('hist-Vb-',num2str(counter)),'epsc')
-    
-    figure(3)
-    saveas(gcf,strcat('hist-tau-',num2str(counter)),'epsc')
+%     figure(1)
+%     saveas(gcf,strcat('hist-gr-',num2str(counter)),'epsc')
+%     
+%     figure(2)
+%     saveas(gcf,strcat('hist-Vb-',num2str(counter)),'epsc')
+%     
+%     figure(3)
+%     saveas(gcf,strcat('hist-tau-',num2str(counter)),'epsc')
     
 end
 
