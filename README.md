@@ -174,9 +174,9 @@ Q: is individual trend different or similar to average?
 A: no! more blobby
 
 ### ss19
-identical to ss18, except plotting ln(Vb) instead of Vb
+identical to ss18, except plotting log_10(Vb) instead of Vb
 Q: is individual trend different or similar to average? 
-A: no! more blobby
+A: no! exaggerates flatter slope of size vs growth rate relationship
 
 
 ## Retired code
