@@ -16,7 +16,7 @@
 
 
 %  Last edit: Jen Nguyen, 2020 July 29
-%  Commit: first commit, plot mean values. still need single cell
+%  Commit: update to plot single cell scatter for each replicate condition
 
 
 %  OK let's go!
@@ -441,12 +441,9 @@ clear cr_vb cr_tau cr_lam cr_slo
 clear gg hh ii jj repl condition
 
 
-%% Part 6. plot
+%% Part 6. plot replicate means only
 
-%         - plot mean slope_i vs. mean Vb_i of each replicate
-%         - in separate figures, overlay single replicate scatter over mean data
-%           filling in 'o' for replicate mean of scatter
-%           other replicate means can have hollow 'o'
+%          mean slope_i vs. mean Vb_i of each replicate
 
 
 % 0. initialize colors and shape for plotting
@@ -463,6 +460,9 @@ mean_Vb_steady = [];
 std_slope_steady = [];
 std_Vb_steady = [];
 numcells_steady = [];
+steady_slopes_i = [];
+steady_Vb_i = [];
+
 for ii = 1:length(steady_slope.mean)
     
     % ii. loop through timescale groups to concatenate steady means
@@ -481,9 +481,15 @@ for ii = 1:length(steady_slope.mean)
     num_ii = cellfun(@length,compiled_steady{1,ii}.slope_i);
     numcells_steady = [numcells_steady; num_ii];
     
+    slo_ii = compiled_steady{1,ii}.slope_i;
+    steady_slopes_i = [steady_slopes_i; slo_ii];
+    
+    vb_ii = compiled_steady{1,ii}.Vb_i;
+    steady_Vb_i = [steady_Vb_i; vb_ii];
+    
 end
 numcells_steady(numcells_steady == 0) = NaN;
-clear ts_Vb ts_slope s_std v_std ii num_ii
+clear ts_Vb ts_slope s_std v_std ii num_ii vb_ii slo_ii
 
 
 % iii. calculate standard error of the mean for each steady replicate
@@ -517,6 +523,7 @@ for sc = 1:3
     hold on
     
 end
+clear sc sc_color
 ylabel('slope_i')
 xlabel('Vb_i')
 
@@ -561,7 +568,177 @@ for ts = 1:4
     hold on
     
 end
+clear color ts yvals xvals yerr xerr
+title('mean slope_i vs mean Vb_i of each replicate')
 
+
+%% Part 7. plot single-cell scatter overlaid by replicate means
+
+%         in separate figures, overlay single rep condition scatter over mean data
+%         filling in 'o' for replicate mean of scatter
+%         other replicate means can have hollow 'o'
+
+% 1. loop through steady replicates to plot scatter from one rep per figure
+%    by column nutrient condition (low, ave, high)
+
+cd('/Users/jen/Documents/StockerLab/Writing/manuscript 2/superSize_figs/ss17/')
+counter = 0;
+
+for condition = 1:3
+    for row = 1:length(steady_Vb_i)
+         
+        % 2. isolate slope_i and Vb_i of current rep condition
+        Vb_i = steady_Vb_i{row,condition};
+        if isempty(Vb_i) == 1
+            continue
+        else
+            slope_i = steady_slopes_i{row,condition};
+            counter = counter + 1;
+            
+            % 3. plot single cell scatter
+            figure(2)
+            scatter(Vb_i,slope_i,10,'MarkerEdgeColor',rgb('Silver'))
+            hold on
+            
+            % 4. plot mean point for current rep condition (filled)
+            figure(2) % slope vs Vb (mean +/- sem)
+            rc_mean_vb = mean_Vb_steady(row,condition);
+            rc_mean_slo = mean_slope_steady(row,condition);
+            rc_color = rgb(palette_steady{condition});
+            scatter(rc_mean_vb,rc_mean_slo,100,'filled','MarkerFaceColor',rc_color)
+            hold on
+            
+            
+            % 5. plot remaining means of all replicate conditions (hollow)
+            for sc = 1:3
+                
+                % i. define color by condition
+                sc_color = rgb(palette_steady{sc});
+                
+                % ii. isolate data by condition column
+                yvals = mean_slope_steady(:,sc);
+                xvals = mean_Vb_steady(:,sc);
+                
+                yerr = sem_slope_steady(:,sc);
+                xerr = sem_Vb_steady(:,sc);
+                
+                % iii. plot condition data
+                figure(2) % slope vs Vb (mean +/- sem)
+                scatter(xvals,yvals,100,'MarkerEdgeColor',sc_color)
+                hold on
+                errorbar(xvals,yvals,xerr,'.','horizontal','Color',sc_color)
+                hold on
+                errorbar(xvals,yvals,yerr,'.','Color',sc_color)
+                hold on
+                
+            end
+            clear sc sc_color xvals yvals yerr xerr
+            ylabel('slope_i')
+            xlabel('Vb_i')
+            axis([0 9 0 70])
+            
+            figure(2)
+            saveas(gcf,strcat('ss17-rc-',num2str(counter)),'epsc')
+            close(gcf)
+        end
+        
+    end
+end
+clear condition rc_color row rc_mean_slo rc_mean_vb Vb_i slope_i
+
+
+
+% 6. loop through fluctuating replicates to plot scatter from one rep per figure
+%    by column timescale (30 s, 5 min, 15 min, 60 min)
+
+
+for timescale = 1:4
+    for rw = 1:length(fluc_slopes_i)
+        
+        % 7. isolate slope_i and Vb_i of current rep condition
+        Vb_if = fluc_Vb_i{rw,timescale};
+        if isempty(Vb_if) == 1
+            continue
+        else
+            slope_if = fluc_slopes_i{rw,timescale};
+            counter = counter + 1;
+            
+            % 8. plot single cell scatter
+            figure(3)
+            scatter(Vb_if,slope_if,10,'MarkerEdgeColor',rgb('Silver'))
+            hold on
+            
+            % 9. plot mean point for current rep condition (filled)
+            figure(3) % slope vs Vb (mean +/- sem)
+            rt_mean_vb = mean_Vb_fluc(rw,timescale);
+            rt_mean_slo = mean_slope_fluc(rw,timescale);
+            rt_color = rgb(palette_fluc{timescale});
+            scatter(rt_mean_vb,rt_mean_slo,100,'filled','MarkerFaceColor',rt_color)
+            hold on
+            
+            
+            % 10. plot remaining means of all replicate conditions (hollow)
+            for fl = 1:4
+                
+                % i. define color by condition
+                fl_color = rgb(palette_fluc{fl});
+                
+                % ii. isolate data by condition column
+                yvals = mean_slope_fluc(:,fl);
+                xvals = mean_Vb_fluc(:,fl);
+                
+                yerr = sem_slope_fluc(:,fl);
+                xerr = sem_Vb_fluc(:,fl);
+                
+                % iii. plot condition data
+                figure(3) % slope vs Vb (mean +/- sem)
+                scatter(xvals,yvals,100,'MarkerEdgeColor',fl_color)
+                hold on
+                errorbar(xvals,yvals,xerr,'.','horizontal','Color',fl_color)
+                hold on
+                errorbar(xvals,yvals,yerr,'.','Color',fl_color)
+                hold on
+                
+            end
+            clear fl fl_color xvals yvals yerr xerr
+            ylabel('slope_i')
+            xlabel('Vb_i')
+            axis([0 9 0 70])
+            
+            
+            % 10. plot means of all steady replicate conditions (hollow)
+            for sc = 1:3
+                
+                % i. define color by condition
+                sc_color = rgb(palette_steady{sc});
+                
+                % ii. isolate data by condition column
+                yvals = mean_slope_steady(:,sc);
+                xvals = mean_Vb_steady(:,sc);
+                
+                yerr = sem_slope_steady(:,sc);
+                xerr = sem_Vb_steady(:,sc);
+                
+                % iii. plot condition data
+                figure(3) % slope vs Vb (mean +/- sem)
+                scatter(xvals,yvals,100,'MarkerEdgeColor',sc_color)
+                hold on
+                errorbar(xvals,yvals,xerr,'.','horizontal','Color',sc_color)
+                hold on
+                errorbar(xvals,yvals,yerr,'.','Color',sc_color)
+                hold on
+                
+            end
+            clear sc sc_color xvals yvals yerr xerr
+            
+            figure(3)
+            saveas(gcf,strcat('ss17-rc-',num2str(counter)),'epsc')
+            close(gcf)
+            
+        end
+    end
+    
+end
 
 
 

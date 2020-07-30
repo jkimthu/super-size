@@ -162,10 +162,10 @@ answer: seems so! though numbers are not a direct match
 -comparable distributions suggest a difference from size vs growth rate plot in Taheri which shows difference between averaged and individual level trends
 
 ### ss17
-// still to do: directly related to ss10a (just the single cell version)
 for each single cell, divide tau_i by Vb_i
-plot single cell scatter for each replicate condition, and mean plotted in ss10a (other means faded?)
-test whether individual vs average trend is different or similar.
+plot single cell scatter of tau_i/Vb_i vs Vb_i for each replicate condition, and mean point from each (like ss10a)
+Q: is individual trend different or similar to average? 
+A: very similar!!
 
 
 
