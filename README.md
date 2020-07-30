@@ -167,7 +167,16 @@ plot single cell scatter of tau_i/Vb_i vs Vb_i for each replicate condition, and
 Q: is individual trend different or similar to average? 
 A: very similar!!
 
+### ss18
+demonstration of other metrics with mismatch between single cell and average trends
+similar to ss17, except plotting Vb vs lambda
+Q: is individual trend different or similar to average? 
+A: no! more blobby
 
+### ss19
+identical to ss18, except plotting ln(Vb) instead of Vb
+Q: is individual trend different or similar to average? 
+A: no! more blobby
 
 
 ## Retired code
