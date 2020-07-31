@@ -147,13 +147,12 @@ plot single-cell tau_i and Vb_i over time in steady environments:
 3. steady high
 
 ### ss15
-// still to do:
 single-cell determination of slope between tau_i and Vb_i.
 plot single-cell tau_i and Vb_i across transitions:
 1. steady-state transitions (low to high)
 2. steady-state transitions (high to low)
 3. steady-state low to fluctuating (T = 60min) 
-fit slope across small increments
+Slope transitions quickly between conditions
 
 ### ss16
 is single-cell slope directly related to average whole dataset slope?
