@@ -177,6 +177,11 @@ identical to ss18, except plotting log_10(Vb) instead of Vb
 Q: is individual trend different or similar to average? 
 A: no! exaggerates flatter slope of size vs growth rate relationship
 
+### ss20
+does single-cell slope_i vs time tell us why 15 min and 60 min sizes are different?
+similar to ss15 but with t15 and t60 data
+Yes??! slope_i does not fluctuate with T = 15 min, but yes in T = 60min
+
 
 ## Retired code
 
