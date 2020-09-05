@@ -18,8 +18,8 @@
 %  Part 6. plot!
 
 
-%  Last edit: Jen Nguyen, 2020 Sept 4
-%  Commit: first commit
+%  Last edit: Jen Nguyen, 2020 Sept 5
+%  Commit: visualizations of measured and broken tau_o and alpha pairs
 
 
 %  OK let's go!
@@ -44,7 +44,7 @@ environment_order = {'low',30,300,900,3600,'ave','high'};
 
 % 1. re-organize data by nutrient condition, keep replicates separated
 t0_5 = 1:3; t5 = 4:6; t15 = 7:10; t60 = 11:13; % row number in data structure 
-fluc = 1; low = 2; ave = 3; high = 4;          % row number in data structure 
+fluc_alpha = 1; low = 2; ave = 3; high = 4;          % row number in data structure 
 
 counter = zeros(1,length(environment_order));
 organized_data = [];
@@ -252,8 +252,8 @@ fluc_slopes_i = cell(4,4);
 fluc_Vb_i = cell(4,4);
 fluc_tau_i = cell(4,4);
 fluc_lambda_i = cell(4,4);
-alpha_fluc = nan(4,4);
-taunot_fluc = nan(4,4);
+fluc_alpha = nan(4,4);
+fluc_taunot = nan(4,4);
     
 
 % 0. for each condition of interest
@@ -319,25 +319,25 @@ for ts = 1:length(flucdata)
         %   i. scatter tau_i vs Vb_i
         figure(rr)
         scatter(Vb_i,tau_i)
-            
-            %  ii. use linear fit to find alpha (slope) and tau_o (y-int)
-            fit = polyfit(Vb_i,tau_i,1);
-            x = linspace(min(Vb_i),max(Vb_i),10);
-            y = fit(1).*x + fit(2);
-            hold on
-            text(3,5,strcat('y=',num2str(fit(1)),'x+',num2str(fit(2))))
-            plot(x,y)
-            ylabel('tau_i')
-            xlabel('Vb_i')
-            
-            %  iii. save plot
-            saveas(gcf,strcat('ss21-taui-v-Vbi-tscale-',num2str(ts),'-rep-',num2str(rr)),'epsc')
-            close(gcf)
-            
-            %  iv. save alpha and tau_o
-            alpha_fluc(rr,ts) = fit(1);
-            taunot_fluc(rr,ts) = fit(2);
-            clear Vb_i tau_i lambda_i slope_i fit x y
+        
+        %  ii. use linear fit to find alpha (slope) and tau_o (y-int)
+        fit = polyfit(Vb_i,tau_i,1);
+        x = linspace(min(Vb_i),max(Vb_i),10);
+        y = fit(1).*x + fit(2);
+        hold on
+        text(3,5,strcat('y=',num2str(fit(1)),'x+',num2str(fit(2))))
+        plot(x,y)
+        ylabel('tau_i')
+        xlabel('Vb_i')
+        
+        %  iii. save plot
+        %saveas(gcf,strcat('ss21-taui-v-Vbi-tscale-',num2str(ts),'-rep-',num2str(rr)),'epsc')
+        close(gcf)
+        
+        %  iv. save alpha and tau_o
+        fluc_alpha(rr,ts) = fit(1);
+        fluc_taunot(rr,ts) = fit(2);
+        clear Vb_i tau_i lambda_i slope_i fit x y
         
       
     end
@@ -351,473 +351,311 @@ clear numcells lamb tau vol_birth exp ts currCond col
 %% Part 4. save data!
 
 cd('/Users/jen/super-size/')
-save('ss21.mat', 'compiled_steady','numcells_fluc','fluc_slopes_i','fluc_Vb_i','fluc_tau_i','fluc_lambda_i')
+save('ss21.mat', 'compiled_steady','numcells_fluc','fluc_slopes_i','fluc_Vb_i','fluc_tau_i','fluc_lambda_i','fluc_alpha','fluc_taunot')
 
 
-%% Part 5. plot hyperbolas!
+%% Part 5. plot hyperbolas (measured tau_o and alpha pairs)
 
-% here is where i left off!
+%  Strategy:
+%
+%  0. load data and initialize colors
+
+%     calculate tau (y) across a range of Vb (x) according to:
+%
+%           tau = tau_o + alpha * Vb
+%
+%     where alpha = slope of line fit to scatter (tau_i vs. Vb_i)
+%           tau_o = y-intercept of line fit to scatter
+%
+
+%  1. plot tau vs Vb for measured alpha and tau_o  (should fall on hyperbola)
+%  2. plot tau vs Vb for fixed alpha and all tau_o  (should fall off)
+ 
 
 clc
 clear
 
 cd('/Users/jen/super-size/')
 load('ss21.mat')
-
-%% Part 5. calculate replicate means for plotting in part 6
-
-clc
-clear
-
-cd('/Users/jen/super-size/')
-load('ss17.mat')
-
-
-% 1. calculate mean, standard deviation and coefficient of variation 
-%    of each replicates from FLUCTUATING conditions
-
-fluc_slope.mean = cellfun(@nanmean,fluc_slopes_i);
-fluc_slope.std = cellfun(@nanstd,fluc_slopes_i);
-fluc_slope.cv = (fluc_slope.std./fluc_slope.mean) * 100;
-
-fluc_Vb.mean = cellfun(@nanmean,fluc_Vb_i);
-fluc_Vb.std = cellfun(@nanstd,fluc_Vb_i);
-fluc_Vb.cv = (fluc_Vb.std./fluc_Vb.mean) * 100;
-
-fluc_tau.mean = cellfun(@nanmean,fluc_tau_i);
-fluc_tau.std = cellfun(@nanstd,fluc_tau_i);
-fluc_tau.cv = (fluc_tau.std./fluc_tau.mean) * 100;
-
-fluc_lambda.mean = cellfun(@nanmean,fluc_lambda_i);
-fluc_lambda.std = cellfun(@nanstd,fluc_lambda_i);
-fluc_lambda.cv = (fluc_lambda.std./fluc_lambda.mean) * 100;
-
-
-% 2. calculate mean, standard deviation and coefficient of variation 
-%    of each replicates from STEADY conditions
-
-%    - separated by parallel fluctuation timescale
-
-%    i. birth volume
-xx = cell(1,4);
-yy = cell(1,4);
-zz = cell(1,4);
-for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
-    x = cellfun(@nanmean,compiled_steady{1,tscale}.Vb_i);
-    y = cellfun(@nanstd,compiled_steady{1,tscale}.Vb_i);
-    xx{tscale} = x;
-    yy{tscale} = y;
-    zz{tscale} = (y./x) * 100;
-end
-steady_Vb.mean = xx;
-steady_Vb.std = yy;
-steady_Vb.cv = zz;
-clear x y xx yy zz tscale
-
-
-%   ii. division time (tau)
-aa = cell(1,4);
-bb = cell(1,4);
-cc = cell(1,4);
-for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
-    a = cellfun(@nanmean,compiled_steady{1,tscale}.tau_i);
-    b = cellfun(@nanstd,compiled_steady{1,tscale}.tau_i);
-    aa{tscale} = a;
-    bb{tscale} = b;
-    cc{tscale} = (b./a) * 100;
-end
-steady_tau.mean = aa;
-steady_tau.std = bb;
-steady_tau.cv = cc;
-clear a b aa bb cc tscale
-
-
-%  iii. growth rate (lambda)
-qq = cell(1,4);
-rr = cell(1,4);
-ss = cell(1,4);
-for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
-    q = cellfun(@nanmean,compiled_steady{1,tscale}.lambda_i);
-    r = cellfun(@nanstd,compiled_steady{1,tscale}.lambda_i);
-    qq{tscale} = q;
-    rr{tscale} = r;
-    ss{tscale} = (r./q) * 100;
-end
-steady_lambda.mean = qq;
-steady_lambda.std = rr;
-steady_lambda.cv = ss;
-clear q r qq rr ss tscale
-
-
-% iv. slopes (tau_i/Vb_i)
-dd = cell(1,4);
-ee = cell(1,4);
-ff = cell(1,4);
-for tscale = 1:4     % 1 = 30 sec; 2 = 5 min; 3 = 15 min; 4 = 60 min
-    d = cellfun(@nanmean,compiled_steady{1,tscale}.slope_i);
-    e = cellfun(@nanstd,compiled_steady{1,tscale}.slope_i);
-    dd{tscale} = d;
-    ee{tscale} = e;
-    ff{tscale} = (e./d) * 100;
-end
-steady_slope.mean = dd;
-steady_slope.std = ee;
-steady_slope.cv = ff;
-clear d e dd ee ff tscale
-
-
-
-% 3. calculate mean, standard deviation and coefficient of variation 
-%    from compilation of STEADY conditions
-
-%    i. aggregate all steady data into columns by condition
-gg = [];
-hh = [];
-ii = [];
-jj = [];
-for tscale = 1:4
-    gg = [gg; compiled_steady{1,tscale}.Vb_i];     % Vb
-    hh = [hh; compiled_steady{1,tscale}.tau_i];    % tau
-    ii = [ii; compiled_steady{1,tscale}.lambda_i]; % lambda
-    jj = [jj; compiled_steady{1,tscale}.slope_i];
-end
-clear tscale
-
-%   ii. aggregate all data belonging to same condition
-for condition = 1:3
-    
-    all_vb = [];
-    all_tau = [];
-    all_lam = [];
-    all_slo = [];
-    for repl = 1:length(gg)
-        
-        cr_vb = gg{repl,condition};
-        if isempty(cr_vb) == 1
-            continue
-        else
-            cr_tau = hh{repl,condition};
-            cr_lam = ii{repl,condition};
-            cr_slo = jj{repl,condition};
-            
-            all_vb = [all_vb; cr_vb];
-            all_tau = [all_tau; cr_tau];
-            all_lam = [all_lam; cr_lam];
-            all_slo = [all_slo; cr_slo];
-        end
-        clear cr_vb cr_tau cr_lam cr_slo
-        
-    end
-    aggregate_steady_Vb{1,condition} = all_vb;
-    aggregate_steady_tau{1,condition} = all_tau;
-    aggregate_steady_lambda{1,condition} = all_lam;
-    aggregate_steady_slope{1,condition} = all_slo;
-    
-end
-clear all_vb all_tau all_lam all_slo
-clear cr_vb cr_tau cr_lam cr_slo
-clear gg hh ii jj repl condition
-
-
-%% Part 6. plot replicate means only
-
-%          mean slope_i vs. mean Vb_i of each replicate
+clear fluc_lambda_i fluc_slopes_i fluc_tau_i fluc_Vb_i
 
 
 % 0. initialize colors and shape for plotting
 palette_steady = {'Indigo','GoldenRod','FireBrick'};
 palette_fluc = {'RoyalBlue','CornflowerBlue','DeepSkyBlue','CadetBlue'};
-shape = 'o';
 
 
-% 1. first, plot mean slope_i vs. mean Vb_i from all steady replicates
+% 1. calculate tau (y) across a range of Vb (x) according to:
+%
+%           tau = tau_o + alpha * Vb
 
-%   i. gather mean and std of slope_i and Vb_i into columns by condition
-mean_slope_steady = [];
-mean_Vb_steady = [];
-std_slope_steady = [];
-std_Vb_steady = [];
-numcells_steady = [];
-steady_slopes_i = [];
-steady_Vb_i = [];
-
-for ii = 1:length(steady_slope.mean)
+% 1A. with alpha and tau_o pairs measured from STEADY DATA
+% 1A. i. concatenate alpha and tau_o from steady conditions of diff timescales into one matrix 
+alpha_steady = [];
+taunot_steady = [];
+for tscale = 1:4
     
-    % ii. loop through timescale groups to concatenate steady means
-    ts_slope = steady_slope.mean{1,ii};
-    mean_slope_steady = [mean_slope_steady; ts_slope];
+    curr_alpha = compiled_steady{1,tscale}.alpha;
+    curr_taunot = compiled_steady{1,tscale}.tau_o;
     
-    ts_Vb = steady_Vb.mean{1,ii};
-    mean_Vb_steady = [mean_Vb_steady; ts_Vb];
-    
-    s_std = steady_slope.std{1,ii};
-    std_slope_steady = [std_slope_steady; s_std];
-    
-    v_std = steady_Vb.std{1,ii};
-    std_Vb_steady = [std_Vb_steady; v_std];
-    
-    num_ii = cellfun(@length,compiled_steady{1,ii}.slope_i);
-    numcells_steady = [numcells_steady; num_ii];
-    
-    slo_ii = compiled_steady{1,ii}.slope_i;
-    steady_slopes_i = [steady_slopes_i; slo_ii];
-    
-    vb_ii = compiled_steady{1,ii}.Vb_i;
-    steady_Vb_i = [steady_Vb_i; vb_ii];
+    alpha_steady = [alpha_steady; curr_alpha];
+    taunot_steady = [taunot_steady; curr_taunot];
     
 end
-numcells_steady(numcells_steady == 0) = NaN;
-clear ts_Vb ts_slope s_std v_std ii num_ii vb_ii slo_ii
+clear curr_alpha curr_taunot tscale
 
 
-% iii. calculate standard error of the mean for each steady replicate
-%      s.e.m. = st dev / sqrt(n)
-sem_slope_steady = std_slope_steady./sqrt(numcells_steady);
-sem_Vb_steady =  std_Vb_steady./sqrt(numcells_steady);
+% 1A. ii. for each measured alpha and tau_o pair, vary Vb to calculate tau
+%      a) vary Vb
+Vb_vector = 0.5:0.5:10;
 
+%      b) prepare to loop through alpha and tau_o pairs
+dim = size(alpha_steady);
+numpairs = dim(1) * dim(2); 
 
-% iv. plot data from STEADY conditions
-%     color hollow points by condition
-
-for sc = 1:3
+tau_steady_calculated = cell(dim(1),dim(2));
+slope_steady_calculated = cell(dim(1),dim(2));
+for pair = 1:numpairs
     
-    % i. define color by condition
-    sc_color = rgb(palette_steady{sc});
-    
-    % ii. isolate data by condition column
-    yvals = mean_slope_steady(:,sc);
-    xvals = mean_Vb_steady(:,sc);
-    
-    yerr = sem_slope_steady(:,sc);
-    xerr = sem_Vb_steady(:,sc);
-
-    % iii. plot condition data
-    figure(1) % slope vs Vb (mean +/- sem)
-    scatter(xvals,yvals,100,'filled','MarkerFaceColor',sc_color)
-    hold on
-    errorbar(xvals,yvals,xerr,'.','horizontal','Color',sc_color)
-    hold on
-    errorbar(xvals,yvals,yerr,'.','Color',sc_color)
-    hold on
-    
-end
-clear sc sc_color
-ylabel('slope_i')
-xlabel('Vb_i')
-
-
-
-% 2. second, plot mean slope_i vs. mean Vb_i from all fluctuating replicates
-
-%   i. gather mean and std of slope_i and Vb_i into columns by timescale
-mean_slope_fluc = fluc_slope.mean;
-mean_Vb_fluc = fluc_Vb.mean;
-std_slope_fluc = fluc_slope.std;
-std_Vb_fluc = fluc_Vb.std;
-
-% ii. calculate standard error of the mean for each steady replicate
-%     s.e.m. = st dev / sqrt(n)
-sem_slope_fluc = std_slope_fluc./sqrt(numcells_fluc);
-sem_Vb_fluc =  std_Vb_fluc./sqrt(numcells_fluc);
-
-
-% iii. plot data from FLUCTUATING conditions
-%      color hollow points by timescale
-
-for ts = 1:4
-    
-    % i. define color by condition
-    color = rgb(palette_fluc{ts});
-    
-    % ii. isolate data by condition column
-    yvals = mean_slope_fluc(:,ts);
-    xvals = mean_Vb_fluc(:,ts);
-    
-    yerr = sem_slope_fluc(:,ts);
-    xerr = sem_Vb_fluc(:,ts);
-
-    % iii. plot condition data
-    figure(1) % slope vs Vb (mean +/- sem)
-    scatter(xvals,yvals,100,'filled','MarkerFaceColor',color)
-    hold on
-    errorbar(xvals,yvals,xerr,'.','horizontal','Color',color)
-    hold on
-    errorbar(xvals,yvals,yerr,'.','Color',color)
-    hold on
-    
-end
-clear color ts yvals xvals yerr xerr
-title('mean slope_i vs mean Vb_i of each replicate')
-
-
-%% Part 7. plot single-cell scatter overlaid by replicate means
-
-%         in separate figures, overlay single rep condition scatter over mean data
-%         filling in 'o' for replicate mean of scatter
-%         other replicate means can have hollow 'o'
-
-% 1. loop through steady replicates to plot scatter from one rep per figure
-%    by column nutrient condition (low, ave, high)
-
-cd('/Users/jen/Documents/StockerLab/Writing/manuscript 2/superSize_figs/ss17/')
-counter = 0;
-
-for condition = 1:3
-    for row = 1:length(steady_Vb_i)
-         
-        % 2. isolate slope_i and Vb_i of current rep condition
-        Vb_i = steady_Vb_i{row,condition};
-        if isempty(Vb_i) == 1
-            continue
-        else
-            slope_i = steady_slopes_i{row,condition};
-            counter = counter + 1;
-            
-            % 3. plot single cell scatter
-            figure(2)
-            scatter(Vb_i,slope_i,10,'MarkerEdgeColor',rgb('Silver'))
-            hold on
-            
-            % 4. plot mean point for current rep condition (filled)
-            figure(2) % slope vs Vb (mean +/- sem)
-            rc_mean_vb = mean_Vb_steady(row,condition);
-            rc_mean_slo = mean_slope_steady(row,condition);
-            rc_color = rgb(palette_steady{condition});
-            scatter(rc_mean_vb,rc_mean_slo,100,'filled','MarkerFaceColor',rc_color)
-            hold on
-            
-            
-            % 5. plot remaining means of all replicate conditions (hollow)
-            for sc = 1:3
-                
-                % i. define color by condition
-                sc_color = rgb(palette_steady{sc});
-                
-                % ii. isolate data by condition column
-                yvals = mean_slope_steady(:,sc);
-                xvals = mean_Vb_steady(:,sc);
-                
-                yerr = sem_slope_steady(:,sc);
-                xerr = sem_Vb_steady(:,sc);
-                
-                % iii. plot condition data
-                figure(2) % slope vs Vb (mean +/- sem)
-                scatter(xvals,yvals,100,'MarkerEdgeColor',sc_color)
-                hold on
-                errorbar(xvals,yvals,xerr,'.','horizontal','Color',sc_color)
-                hold on
-                errorbar(xvals,yvals,yerr,'.','Color',sc_color)
-                hold on
-                
-            end
-            clear sc sc_color xvals yvals yerr xerr
-            ylabel('slope_i')
-            xlabel('Vb_i')
-            axis([0 9 0 70])
-            
-            figure(2)
-            saveas(gcf,strcat('ss17-rc-',num2str(counter)),'epsc')
-            close(gcf)
-        end
-        
-    end
-end
-clear condition rc_color row rc_mean_slo rc_mean_vb Vb_i slope_i
-
-
-
-% 6. loop through fluctuating replicates to plot scatter from one rep per figure
-%    by column timescale (30 s, 5 min, 15 min, 60 min)
-
-
-for timescale = 1:4
-    for rw = 1:length(fluc_slopes_i)
-        
-        % 7. isolate slope_i and Vb_i of current rep condition
-        Vb_if = fluc_Vb_i{rw,timescale};
-        if isempty(Vb_if) == 1
-            continue
-        else
-            slope_if = fluc_slopes_i{rw,timescale};
-            counter = counter + 1;
-            
-            % 8. plot single cell scatter
-            figure(3)
-            scatter(Vb_if,slope_if,10,'MarkerEdgeColor',rgb('Silver'))
-            hold on
-            
-            % 9. plot mean point for current rep condition (filled)
-            figure(3) % slope vs Vb (mean +/- sem)
-            rt_mean_vb = mean_Vb_fluc(rw,timescale);
-            rt_mean_slo = mean_slope_fluc(rw,timescale);
-            rt_color = rgb(palette_fluc{timescale});
-            scatter(rt_mean_vb,rt_mean_slo,100,'filled','MarkerFaceColor',rt_color)
-            hold on
-            
-            
-            % 10. plot remaining means of all replicate conditions (hollow)
-            for fl = 1:4
-                
-                % i. define color by condition
-                fl_color = rgb(palette_fluc{fl});
-                
-                % ii. isolate data by condition column
-                yvals = mean_slope_fluc(:,fl);
-                xvals = mean_Vb_fluc(:,fl);
-                
-                yerr = sem_slope_fluc(:,fl);
-                xerr = sem_Vb_fluc(:,fl);
-                
-                % iii. plot condition data
-                figure(3) % slope vs Vb (mean +/- sem)
-                scatter(xvals,yvals,100,'MarkerEdgeColor',fl_color)
-                hold on
-                errorbar(xvals,yvals,xerr,'.','horizontal','Color',fl_color)
-                hold on
-                errorbar(xvals,yvals,yerr,'.','Color',fl_color)
-                hold on
-                
-            end
-            clear fl fl_color xvals yvals yerr xerr
-            ylabel('slope_i')
-            xlabel('Vb_i')
-            axis([0 9 0 70])
-            
-            
-            % 10. plot means of all steady replicate conditions (hollow)
-            for sc = 1:3
-                
-                % i. define color by condition
-                sc_color = rgb(palette_steady{sc});
-                
-                % ii. isolate data by condition column
-                yvals = mean_slope_steady(:,sc);
-                xvals = mean_Vb_steady(:,sc);
-                
-                yerr = sem_slope_steady(:,sc);
-                xerr = sem_Vb_steady(:,sc);
-                
-                % iii. plot condition data
-                figure(3) % slope vs Vb (mean +/- sem)
-                scatter(xvals,yvals,100,'MarkerEdgeColor',sc_color)
-                hold on
-                errorbar(xvals,yvals,xerr,'.','horizontal','Color',sc_color)
-                hold on
-                errorbar(xvals,yvals,yerr,'.','Color',sc_color)
-                hold on
-                
-            end
-            clear sc sc_color xvals yvals yerr xerr
-            
-            figure(3)
-            saveas(gcf,strcat('ss17-rc-',num2str(counter)),'epsc')
-            close(gcf)
-            
-        end
+    %  c) determine whether to skip index (no pair data)
+    tau_o = taunot_steady(pair);
+    alpha = alpha_steady(pair);
+    if isnan(tau_o) == 1
+        continue
     end
     
+    %  d) for indeces with data, calculate tau according to:
+    %     tau = tau_o + alpha * Vb
+    tau = tau_o + alpha * Vb_vector';
+    tau_steady_calculated{pair} = tau;
+    
+    %  e) plot tau/Vb vs Vb, where tau/Vb = alpha + tau_o/Vb
+    slope = tau./Vb_vector';
+    slope_steady_calculated{pair} = slope;
+    
+    if pair <= dim(1)*1
+        color = palette_steady{1};
+    elseif pair <= dim(1)*2
+        color = palette_steady{2};
+    else
+        color = palette_steady{3};
+    end
+    
+    figure(1)
+    plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',2)
+    hold on
+    
 end
+clear dim pair slope numpairs tau tau_o alpha color
+
+figure(1)
+xlabel('simulated Vb')
+ylabel('simulated slope (tau/Vb)')
+title('simulated slope vs Vb from measured alpha and tau_o')
 
 
+% 1B. with alpha and tau_o pairs measured from FLUCTUATING DATA
+%      a) prepare to loop through alpha and tau_o pairs
+dimf = size(fluc_alpha);
+numpairf = dimf(1) * dimf(2); 
+
+tau_fluc_calculated = cell(dimf(1),dimf(2));
+slope_fluc_calculated = cell(dimf(1),dimf(2));
+for pf = 1:numpairf
+    
+    %  b) determine whether to skip index (no pair data)
+    tau_o = fluc_taunot(pf);
+    alpha = fluc_alpha(pf);
+    if isnan(tau_o) == 1
+        continue
+    end
+    
+    %  d) for indeces with data, calculate tau according to:
+    %     tau = tau_o + alpha * Vb
+    tau = tau_o + alpha * Vb_vector';
+    tau_fluc_calculated{pf} = tau;
+    
+    %  e) plot tau/Vb vs Vb, where tau/Vb = alpha + tau_o/Vb
+    slope = tau./Vb_vector';
+    slope_fluc_calculated{pf} = slope;
+    
+    if pf <= dimf(1)*1
+        color = palette_fluc{1};
+    elseif pf <= dimf(1)*2
+        color = palette_fluc{2};
+    elseif pf <= dimf(1)*3
+        color = palette_fluc{3};
+    else
+        color = palette_fluc{4};
+    end
+    
+    figure(1)
+    plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',2)
+    hold on
+    
+end
+clear dimf pf slope numpairf tau tau_o alpha color
+
+
+%% Part 6. plot hyperbolas(?) for fixed alpha and measured tau_o
+
+%  Strategy:
+%
+%  0. load data and initialize colors
+
+%     calculate tau (y) across a range of Vb (x) according to:
+%
+%           tau = tau_o + alpha * Vb
+%
+%     where alpha = slope of line fit to scatter (tau_i vs. Vb_i)
+%           tau_o = y-intercept of line fit to scatter
+%
+
+%  1. plot tau vs Vb for measured alpha and tau_o  (should fall on hyperbola)
+%  2. plot tau vs Vb for fixed alpha and all tau_o  (should fall off)
+
+
+% 2. calculate tau (y) across a range of Vb (x) according to:
+%
+%           tau = tau_o + alpha * Vb
+
+
+% 2A. with fixed alpha and various tau_o measured from STEADY DATA
+% 2A. i. prepare to loop through alphas and generate tau_o vector
+%dim = size(alpha_steady);
+%num_alphas = dim(1) * dim(2); 
+alphas = alpha_steady(~isnan(alpha_steady));
+taunot_vector = taunot_steady(~isnan(taunot_steady));
+
+
+% 2A. ii. plot alpha vs tau_o (measured pairs)
+for iii = 1:length(alphas)
+    if iii <= 12
+        color = palette_steady{1};
+    elseif iii <= 25
+        color = palette_steady{2};
+    else
+        color = palette_steady{3};
+    end
+    figure(2)
+    plot(alphas(iii),taunot_vector(iii),'o','Color',rgb(color),'MarkerFaceColor',rgb(color))
+    hold on
+end
+clear iii color
+figure(2)
+title('measured tau_o vs alpha pairs')
+ylabel('tau_o')
+xlabel('alpha')
+
+
+% 1A. ii. for each fixed alpha/varied tau-o "pair", vary Vb to calculate tau
+%      a) vary Vb
+Vb_vector = 0.5:0.5:10;
+
+%tau_steady_broken = cell(length(alphas),1);
+%slope_steady_broken = cell(length(alphas),1);
+for aa = 1:length(alphas)
+    
+    %  b) determine current alpha
+    alpha = alphas(aa);
+    
+    
+    %  c) determine current tau_o
+    for tn = 1:length(taunot_vector)
+        
+        tau_o = taunot_vector(tn);
+        
+        %  d) calculate tau according to: tau = tau_o + alpha * Vb
+        tau = tau_o + alpha * Vb_vector';
+        %tau_steady_broken{aa} = tau;
+        
+        %  e) plot tau/Vb vs Vb, where tau/Vb = alpha + tau_o/Vb
+        slope = tau./Vb_vector';
+        %slope_steady_broken{aa} = slope;
+        
+        if (aa==tn) == 1
+            if aa <= 12
+                color = palette_steady{1};
+            elseif aa <= 25
+                color = palette_steady{2};
+            else
+                color = palette_steady{3};
+            end
+            lw = 2;
+            
+            figure(50)
+            plot(alphas(aa),taunot_vector(tn),'o','Color',rgb(color),'MarkerFaceColor',rgb(color))
+            hold on
+        else
+            color = 'Silver';
+            lw = 1;
+        end
+        
+        figure(aa)
+        plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',lw)
+        hold on
+        
+    end
+    figure(aa)
+    title('simulated curves with fixed alpha, varied tau_o')
+    ylabel('simulated slope (tau/Vb)')
+    xlabel('simulated Vb')
+    axis([0 10 -20 200])
+    
+  
+end
+clear aa iii bp slope numpairs tau tau_o alpha color lw tn
+
+figure(50)
+title('measured tau_o vs alpha pairs')
+ylabel('measured tau_o')
+xlabel('measured alpha')
+
+
+% 1B. with alpha and tau_o pairs measured from FLUCTUATING DATA
+%      a) prepare to loop through alpha and tau_o pairs
+dimf = size(fluc_alpha);
+numpairf = dimf(1) * dimf(2); 
+
+tau_fluc_calculated = cell(dimf(1),dimf(2));
+slope_fluc_calculated = cell(dimf(1),dimf(2));
+for pf = 1:numpairf
+    
+    %  b) determine whether to skip index (no pair data)
+    tau_o = fluc_taunot(pf);
+    alpha = fluc_alpha(pf);
+    if isnan(tau_o) == 1
+        continue
+    end
+    
+    %  d) for indeces with data, calculate tau according to:
+    %     tau = tau_o + alpha * Vb
+    tau = tau_o + alpha * Vb_vector';
+    tau_fluc_calculated{pf} = tau;
+    
+    %  e) plot tau/Vb vs Vb, where tau/Vb = alpha + tau_o/Vb
+    slope = tau./Vb_vector';
+    slope_fluc_calculated{pf} = slope;
+    
+    if pf <= dimf(1)*1
+        color = palette_fluc{1};
+    elseif pf <= dimf(1)*2
+        color = palette_fluc{2};
+    elseif pf <= dimf(1)*3
+        color = palette_fluc{3};
+    else
+        color = palette_fluc{4};
+    end
+    
+    figure(1)
+    plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',2)
+    hold on
+    
+end
+clear dimf pf slope numpairf tau tau_o alpha color
+
+
+
+%% 
 
 
