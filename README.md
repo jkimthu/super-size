@@ -183,6 +183,15 @@ similar to ss15 but with t15 and t60 data
 Yes??! slope_i does not fluctuate with T = 15 min, but yes in T = 60min
 
 
+### ss21
+one might think that our collapsed data may result from the fact that we are plotting hyperbolas.
+this should not be true, so let's confirm that it's really that alpha and tau_o covary to fit our hyperbole.
+- quantify alpha and tau_o for each condition with a scatter of tau_i vs Vb_i
+- for each average tau_o and alpha, plot hyperbola:
+- for example: take one alpha, fix it and use all measured tau_o. should fall off.
+
+
+
 ## Retired code
 
 1. Figure 6: simulations with varied growth rate function and fixed tau function

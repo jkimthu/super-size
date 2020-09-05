@@ -161,7 +161,7 @@ for sc = 1:3
             
             rep_cc = current_condData{rr,1}.cc;
             rep_birthvols = rep_cc(:,1);    % each row = cc; number = birth volume (cubic um)
-            clear rep_meta rep_cc current_condData
+            clear rep_meta rep_cc
             
             
             % ii. determine lineages with greatest number of generations
