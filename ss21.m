@@ -18,8 +18,8 @@
 %  Part 6. plot!
 
 
-%  Last edit: Jen Nguyen, 2020 Sept 5
-%  Commit: visualizations of measured and broken tau_o and alpha pairs
+%  Last edit: Jen Nguyen, 2020 Sept 6
+%  Commit: visualizing covariance of alpha and tau_o
 
 
 %  OK let's go!
@@ -370,7 +370,10 @@ save('ss21.mat', 'compiled_steady','numcells_fluc','fluc_slopes_i','fluc_Vb_i','
 
 %  1. plot tau vs Vb for measured alpha and tau_o  (should fall on hyperbola)
 %  2. plot tau vs Vb for fixed alpha and all tau_o  (should fall off)
- 
+%  3. plot measured alpha vs tau_o
+
+
+% SECTON 1
 
 clc
 clear
@@ -513,42 +516,25 @@ clear dimf pf slope numpairf tau tau_o alpha color
 
 %  1. plot tau vs Vb for measured alpha and tau_o  (should fall on hyperbola)
 %  2. plot tau vs Vb for fixed alpha and all tau_o  (should fall off)
+%  3. plot measured alpha vs tau_o
 
+
+% SECTON 2
 
 % 2. calculate tau (y) across a range of Vb (x) according to:
 %
 %           tau = tau_o + alpha * Vb
 
 
-% 2A. with fixed alpha and various tau_o measured from STEADY DATA
-% 2A. i. prepare to loop through alphas and generate tau_o vector
+% 2. with fixed alpha and various tau_o measured from STEADY DATA
+% 2. i. prepare to loop through alphas and generate tau_o vector
 %dim = size(alpha_steady);
 %num_alphas = dim(1) * dim(2); 
 alphas = alpha_steady(~isnan(alpha_steady));
 taunot_vector = taunot_steady(~isnan(taunot_steady));
 
 
-% 2A. ii. plot alpha vs tau_o (measured pairs)
-for iii = 1:length(alphas)
-    if iii <= 12
-        color = palette_steady{1};
-    elseif iii <= 25
-        color = palette_steady{2};
-    else
-        color = palette_steady{3};
-    end
-    figure(2)
-    plot(alphas(iii),taunot_vector(iii),'o','Color',rgb(color),'MarkerFaceColor',rgb(color))
-    hold on
-end
-clear iii color
-figure(2)
-title('measured tau_o vs alpha pairs')
-ylabel('tau_o')
-xlabel('alpha')
-
-
-% 1A. ii. for each fixed alpha/varied tau-o "pair", vary Vb to calculate tau
+% 2. ii. for each fixed alpha/varied tau-o "pair", vary Vb to calculate tau
 %      a) vary Vb
 Vb_vector = 0.5:0.5:10;
 
@@ -591,16 +577,16 @@ for aa = 1:length(alphas)
             lw = 1;
         end
         
-        figure(aa)
-        plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',lw)
-        hold on
+        %figure(aa)
+        %plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',lw)
+        %hold on
         
     end
-    figure(aa)
-    title('simulated curves with fixed alpha, varied tau_o')
-    ylabel('simulated slope (tau/Vb)')
-    xlabel('simulated Vb')
-    axis([0 10 -20 200])
+    %figure(aa)
+    %title('simulated curves with fixed alpha, varied tau_o')
+    %ylabel('simulated slope (tau/Vb)')
+    %xlabel('simulated Vb')
+    %axis([0 10 -20 200])
     
   
 end
@@ -612,50 +598,69 @@ ylabel('measured tau_o')
 xlabel('measured alpha')
 
 
-% 1B. with alpha and tau_o pairs measured from FLUCTUATING DATA
-%      a) prepare to loop through alpha and tau_o pairs
-dimf = size(fluc_alpha);
-numpairf = dimf(1) * dimf(2); 
+%% Part 7. plot measured alpha vs tau_o
 
-tau_fluc_calculated = cell(dimf(1),dimf(2));
-slope_fluc_calculated = cell(dimf(1),dimf(2));
-for pf = 1:numpairf
-    
-    %  b) determine whether to skip index (no pair data)
-    tau_o = fluc_taunot(pf);
-    alpha = fluc_alpha(pf);
-    if isnan(tau_o) == 1
-        continue
+%  Strategy:
+%
+%  0. load data and initialize colors
+
+%     calculate tau (y) across a range of Vb (x) according to:
+%
+%           tau = tau_o + alpha * Vb
+%
+%     where alpha = slope of line fit to scatter (tau_i vs. Vb_i)
+%           tau_o = y-intercept of line fit to scatter
+%
+
+%  1. plot tau vs Vb for measured alpha and tau_o  (should fall on hyperbola)
+%  2. plot tau vs Vb for fixed alpha and all tau_o  (should fall off)
+%  3. plot measured alpha vs tau_o
+
+
+
+% SECTION 3
+
+% 3A. ii. plot alpha vs tau_o (measured pairs)
+for iii = 1:length(alphas)
+    if iii <= 12
+        color = palette_steady{1};
+    elseif iii <= 25
+        color = palette_steady{2};
+    else
+        color = palette_steady{3};
     end
-    
-    %  d) for indeces with data, calculate tau according to:
-    %     tau = tau_o + alpha * Vb
-    tau = tau_o + alpha * Vb_vector';
-    tau_fluc_calculated{pf} = tau;
-    
-    %  e) plot tau/Vb vs Vb, where tau/Vb = alpha + tau_o/Vb
-    slope = tau./Vb_vector';
-    slope_fluc_calculated{pf} = slope;
-    
-    if pf <= dimf(1)*1
+    figure(1)
+    plot(alphas(iii),taunot_vector(iii),'o','Color',rgb(color),'MarkerFaceColor',rgb(color))
+    hold on
+end
+clear iii color
+figure(1)
+title('measured tau_o vs alpha pairs')
+ylabel('tau_o')
+xlabel('alpha')
+
+
+% 3B. add alpha and tau_o pairs measured from FLUCTUATING DATA
+alphaf = fluc_alpha(~isnan(fluc_alpha));
+taunot_f = fluc_taunot(~isnan(fluc_taunot));
+
+% 3B. ii. plot alpha vs tau_o (measured pairs)
+for iif = 1:length(alphaf)
+    if iif <= 3
         color = palette_fluc{1};
-    elseif pf <= dimf(1)*2
+    elseif iif <= 6
         color = palette_fluc{2};
-    elseif pf <= dimf(1)*3
+    elseif iif <= 10
         color = palette_fluc{3};
     else
         color = palette_fluc{4};
     end
-    
     figure(1)
-    plot(Vb_vector,slope,'Color',rgb(color),'LineWidth',2)
+    plot(alphaf(iif),taunot_f(iif),'o','Color',rgb(color),'MarkerFaceColor',rgb(color))
     hold on
-    
 end
-clear dimf pf slope numpairf tau tau_o alpha color
+clear iii color
 
 
-
-%% 
 
 
