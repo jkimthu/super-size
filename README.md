@@ -191,6 +191,18 @@ this should not be true, so let's confirm that it's really that alpha and tau_o 
 - for example: take one alpha, fix it and use all measured tau_o. should fall off.
 
 
+### ss22
+plot tau_i vs Vb_i and average tau vs average Vb (single-cell vs population per condition) as suggested by Johannes.
+- similar to ss17
+- used in update Oct 11
+
+
+### ss23
+plot slope_i vs Vb_i and average tau vs average Vb (single-cell vs population per condition) as suggested by Johannes.
+- similar to ss17
+- used in update Oct 11
+
+
 
 ## Retired code
 
