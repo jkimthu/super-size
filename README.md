@@ -202,10 +202,18 @@ plot slope_i vs Vb_i and average tau vs average Vb (single-cell vs population pe
 - similar to ss17
 - used in update Oct 11
 
-### ss 24
+
+### ss24
 bootstrap hypothesis testing finds that fit slope across tau_i vs Vb_i per replicate is a signficant measure.
 - builds from ss23.m
 - used in update Oct 12
+
+
+### ss25
+Test hyperbolic fits using residuals R and varying c in y=c/x.
+- used in update Oct 12
+
+
 
 
 ## Retired code
