@@ -1,0 +1,97 @@
+---
+title: "simulate variations in Vb"
+author: "jen nguyen"
+date: "10/2/2021"
+output: html_document
+---
+
+Question:
+  - How can we have the same growth rate and interdivision time but different slopes?
+
+Strategy: 
+  - Simulate data and plot tau vs. V_b for populations of single cells in which tau and V_b are related by different rules. 
+
+
+Simulations:
+  - All populations have equal mean V_b, but varied standard deviation in V_b.
+    1. Tau and V_b are independent
+    2. Tau = tau_not + alpha*V_b
+
+
+Last edit: Jen Nguyen, 2021 Oct 2
+Commit: simulate effect of varying V_b on slope
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import libraries, include=FALSE}
+library(ggplot2)
+library(here)
+library(tidyverse)
+```
+
+0. Initialize dataframe
+```{r generate empty dataframe}
+df = data.frame(matrix(vector(), 0, 3,
+                dimnames=list(c(), c("Tau", "Vb", "CV"))), stringsAsFactors=F)
+```
+
+1. Fix tau data for all simulations
+2. Generate Vb data with different standard deviation around same mean. Test a range of CVs around the CV used for tau.
+```{r define tau distribution, generate data}
+tau_mean <- 48; # minutes
+tau_sd <- 8; # minutes
+tau_cv <- tau_sd/tau_mean;
+
+Vb_mean <- 3;
+cv <- c(0.01, 0.05, 0.1, 0.1667, 0.2, 0.25, 0.3, 0.4);
+Vb_sd <- cv*Vb_mean;
+```
+
+3. Simulation 1: independent tau and V_b
+```{r simulation 1, generate data}
+tau.sim1 <- rnorm(1000, mean=tau_mean, sd=tau_sd);
+
+for (ii in seq_along(cv)) {
+  vb.sim1 <- rnorm(1000, mean=Vb_mean, sd=Vb_sd[ii]);
+  cvii <- replicate(1000, 1)*cv[ii];
+  df.sim1 <-  df %>% add_row(Tau = tau.sim1, Vb = vb.sim1, CV = cvii) 
+}
+```
+
+```{r visualize tau}
+df.sim1 %>% 
+  filter(CV == cv[1]) %>% 
+  ggplot(aes(x=Tau)) + geom_histogram(binwidth=1) +
+  geom_vline(xintercept = tau_mean)
+```
+```{r simulation 1, scatter tau vs. Vb}
+df.sim1 %>%
+  ggplot(aes(x=Vb, y=Tau, color=CV)) +
+  geom_point() +
+  facet_wrap(~CV)
+```
+4. Simulation 2: tau = tau_not + alpha*Vb
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
