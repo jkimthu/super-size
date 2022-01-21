@@ -2,6 +2,20 @@
 Scripts plotting the effect of nutrient fluctuations on cell size
 
 
+## Resumption
+
+1. loglog_single_expt.m
+   - loglog plots of Vb_i vs. tau_i for each individial experiment
+   - result: all fluc conditions behave like steady, with a power law except for T=60min
+   - in consideration for final paper
+
+2. loglog_single_expt_Vb_lambda.m
+   - question: does T=60min preserve relationship between size and growth rate?
+   - answer: no, T=60min single cells fall off the line by other conditions
+   - not currently under consideration
+
+3. measured_v_expected.m
+   -
 
 
 ## Figures:
