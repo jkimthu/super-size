@@ -15,7 +15,10 @@ Scripts plotting the effect of nutrient fluctuations on cell size
    - not currently under consideration
 
 3. measured_v_expected.m
-   -
+   - question: are the measured values of tau_i, Vdiv_i and lambda_i difference compared to the
+               expected values based on other measurements?
+   - answer: no, no strong difference between expected and measured values. average differences are ~ zero.
+
 
 
 ## Figures:
